@@ -4,3 +4,4 @@ node_modules
 .env
 docker/mysql/mysql_data
 zip.sh
+.cursor
