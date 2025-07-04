@@ -1,4 +1,4 @@
-// src/components/ProjectList.tsx
+// src/components/Project/ProjectList.tsx
 
 import useAppDispatch from '../../hooks/use-app.dispatch';
 import useAppSelector from '../../hooks/use-app.selector';

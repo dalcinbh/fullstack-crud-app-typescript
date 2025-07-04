@@ -1,20 +1,20 @@
-// src/services/ProjectService.ts
+// src/services/project.service.ts
 import { api, requestConfig } from '../config/config';
 import { Project } from '../interfaces/project.interface';
 
 const handleResponse = async (res: Response) => {
   const result = await res.json();
   if (!res.ok) {
-    throw new Error(result.errors?.[0] || 'Ocorreu um erro na operação.');
+    throw new Error(result.errors?.[0] || 'An error occurred during the operation.');
   }
   return result;
 };
 
-// Inserir Projeto
+// Insert Project
 const insertProject = async (
   formData: FormData,
 ): Promise<Project> => {
-  const config = requestConfig('POST', formData); // true para multipart/form-data
+  const config = requestConfig('POST', formData); // true for multipart/form-data
   try {
     const res = await fetch(`${api}/projects/uploadfile`, config);
     const data = await handleResponse(res);
@@ -24,7 +24,7 @@ const insertProject = async (
   }
 };
 
-// Atualizar Projeto
+// Update Project
 const updateProject = async (
   id: string,
   data: Partial<Project>
@@ -39,7 +39,7 @@ const updateProject = async (
   }
 };
 
-// Deletar Projeto
+// Delete Project
 const deleteProject = async (
   id: string,
 ): Promise<{ message: string }> => {
@@ -53,7 +53,7 @@ const deleteProject = async (
   }
 };
 
-// Buscar Todos os Projetos
+// Get All Projects
 const getAllProjects = async (): Promise<Project[]> => {
   const config = requestConfig('GET', null);
   try {
@@ -65,7 +65,7 @@ const getAllProjects = async (): Promise<Project[]> => {
   }
 };
 
-// Buscar Projeto por ID
+// Get Project by ID
 const getProjectById = async (
   id: string,
 ): Promise<Project> => {

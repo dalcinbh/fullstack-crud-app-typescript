@@ -5,7 +5,7 @@ import {
   deleteProject,
   getAllProjects,
   getProjectById,
-} from '../controlers/project.controller.js';
+} from '../controllers/project.controller.js';
 import { sendToFileProjectStorage } from '../middlewares/send-file-project.middleware.js';
 
 const router = express.Router();

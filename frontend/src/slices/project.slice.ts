@@ -1,4 +1,4 @@
-// src/slices/ProjectSlice.ts
+// src/slices/project.slice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import ProjectService from '../services/project.service';
 import { RootState } from '../store';
@@ -22,7 +22,7 @@ export const insertProjectAsync = createAsyncThunk(
   async (formData: FormData, thunkAPI) => {
     try {
       const project = await ProjectService.insertProject(formData);
-      return project; // O backend retorna um projeto com bounds
+      return project; // Backend returns a project with bounds
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -38,7 +38,7 @@ export const updateProjectAsync = createAsyncThunk(
         id,
         data,
       );
-      return updatedProject; // Retorna o projeto atualizado com bounds
+      return updatedProject; // Returns the updated project with bounds
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -64,7 +64,7 @@ export const getAllProjectsAsync = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const projects = await ProjectService.getAllProjects();
-      return projects; // Retorna a lista de projetos com bounds
+      return projects; // Returns the list of projects with bounds
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -77,7 +77,7 @@ export const getProjectByIdAsync = createAsyncThunk(
   async (id: string, thunkAPI) => {
     try {
       const project = await ProjectService.getProjectById(id);
-      return project; // Retorna um projeto com bounds
+      return project; // Returns a project with bounds
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -100,7 +100,7 @@ const ProjectSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Inserir Projeto
+    // Insert Project
     builder
       .addCase(insertProjectAsync.pending, (state) => {
         state.loading = true;
@@ -121,7 +121,7 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = true;
-          state.message = action.payload || 'Erro ao inserir projeto.';
+          state.message = action.payload || 'Error inserting project.';
         },
       );
 
@@ -151,7 +151,7 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = true;
-          state.message = action.payload || 'Erro ao atualizar projeto.';
+          state.message = action.payload || 'Error updating project.';
         },
       );
 
@@ -179,7 +179,7 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;      
           state.error = true;
-          state.message = action.payload || 'Erro ao deletar projeto.';
+          state.message = action.payload || 'Error deleting project.';
         },
       );
 
@@ -202,7 +202,7 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = true;
-          state.message = action.payload || 'Erro ao buscar projetos.';
+          state.message = action.payload || 'Error fetching projects.';
         },
       );
 
@@ -225,7 +225,7 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = true;
-          state.message = action.payload || 'Erro ao buscar projeto.';
+          state.message = action.payload || 'Error fetching project.';
         },
       );
   },

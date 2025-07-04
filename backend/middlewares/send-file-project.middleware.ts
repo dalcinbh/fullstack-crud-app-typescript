@@ -9,20 +9,20 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Função para remover caracteres específicos do início e do fim de uma string
+// Function to remove specific characters from the beginning and end of a string
 const trim = (str: string, char: string) => {
   if (!str) return "";
   const regex = new RegExp(`^${char}+|${char}+$`, "g");
   return str.replace(regex, "");
 };
 
-// Função para escapar caracteres especiais em regex
+// Function to escape special characters in regex
 const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
 
-// Função para normalizar nomes de arquivos
+// Function to normalize file names
 const normalizeFileName = (fileName: string) =>
   fileName
     .toLowerCase()
@@ -34,7 +34,7 @@ const normalizeFileName = (fileName: string) =>
  * Ensure upload directory exists
  */
 const ensureUploadDir = (): string => {
-  const uploadsDir = path.join(__dirname, '..', 'uploads', 'projetos');
+  const uploadsDir = path.join(__dirname, '..', 'uploads', 'projects');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
