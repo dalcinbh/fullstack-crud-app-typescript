@@ -1,0 +1,111 @@
+.backend.code-workspace
+
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+**/.venv
+# misc
+/.env
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.producao
+
+.cursor
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+#backend
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/backend/node_modules
+/backend/.pnp
+/backend/.pnp.js
+
+# testing
+/backend/coverage
+
+#upload
+
+/backend/uploads
+
+/backend/npm-debug.log*
+/backend/yarn-debug.log*
+/backend/yarn-error.log*
+/backend/.env
+
+#frontend
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/frontend/node_modules
+/frontend/.pnp
+/frontend/.pnp.js
+
+# testing
+/frontend/coverage
+
+# production
+/frontend/build
+
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.env
+
+/certificates
+
+/scripts/python/captchas
+
+deploy-backend.sh
+/scripts/python/boleto/__pycache__
+/scripts/python/__pycache__
+/scripts/python/.env
+
+/docker/selenium/.env
+/docker/bullboard/.env
+/docker/postgres/.env
+/docker/metabase/.env
+/docker/metabase/data
+/docker/bullboard/data
+/docker/postgres/data
+/downloads/bills/
+
+#logs
+/logs
+/logs/screenshots
+
+#input documents
+/scripts/python/documents/inputs/
+/scripts/python/documents/outputs/
+/scripts/python/p2p/inputs/
+/scripts/python/p2p/outputs/
+/scripts/python/utils/input/
+/scripts/python/utils/output/
+docker/redis/.env
+docker/redis/data/
+docker/redis/log/
+
+#tmp
+/tmp
+
+#nodemon
+.nodemonignore
+
+#downloads
+/downloads
+
+**/__pycache__/

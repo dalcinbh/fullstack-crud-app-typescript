@@ -1,0 +1,5 @@
+docker/redis/data
+/node_modules
+/dist
+*.min.js
+
