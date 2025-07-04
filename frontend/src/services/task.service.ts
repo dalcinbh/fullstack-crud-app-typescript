@@ -1,6 +1,6 @@
 // src/services/task.service.ts
 import { api, requestConfig } from '../config/config';
-import { Task, CreateTaskRequest, UpdateTaskRequest } from '../interfaces/project.task';
+import { Task, CreateTaskRequest, UpdateTaskRequest } from '../interfaces/task.interface';
 
 const handleResponse = async (res: Response) => {
   const result = await res.json();

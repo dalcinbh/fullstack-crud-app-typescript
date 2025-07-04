@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import TaskService from '../services/task.service';
 import { RootState } from '../store';
-import { Task, TaskStates, CreateTaskRequest, UpdateTaskRequest } from '../interfaces/project.task';
+import { Task, TaskStates, CreateTaskRequest, UpdateTaskRequest } from '../interfaces/task.interface';
 
 // Initial state
 const initialState: TaskStates = {

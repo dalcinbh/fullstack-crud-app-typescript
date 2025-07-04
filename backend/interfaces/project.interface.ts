@@ -1,4 +1,4 @@
-import { Task } from './project.task.js';
+import { Task } from './task.interface.js';
 
 /**
  * Project interface representing the main project entity

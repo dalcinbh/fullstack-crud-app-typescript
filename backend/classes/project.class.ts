@@ -1,5 +1,5 @@
 import { Project as ProjectInterface } from '../interfaces/project.interface.js';
-import { Task } from '../interfaces/project.task.js';
+import { Task } from '../interfaces/task.interface.js';
 import prisma from '../config/prisma.js';
 
 export class Project {

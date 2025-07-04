@@ -1,4 +1,4 @@
-import { Task } from './project.task';
+import { Task } from './task.interface';
 
 /**
  * Project interface representing the main project entity
