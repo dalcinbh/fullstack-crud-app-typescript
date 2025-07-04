@@ -12,6 +12,17 @@ export interface Task {
   updatedAt: Date;
 }
 
+export interface TaskStates {
+  tasks: Task[];
+  task: Task | null;
+  loading: boolean;
+  insertSuccess: boolean;
+  updateSuccess: boolean;
+  deleteSuccess: boolean;
+  error: boolean;
+  message: string;
+}
+
 /**
  * Interface for creating a new task
  */
