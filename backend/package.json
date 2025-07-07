@@ -1,16 +1,21 @@
 {
-  "name": "backend",
+  "name": "project-management-system-backend",
   "version": "1.0.0",
+  "description": "Backend API for the Full Stack Project Management System using Node.js, TypeScript, Express, and Prisma",
+  "author": "Adriano",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "nodemon --exec \"node --loader ts-node/esm\" app.ts",
     "start": "node dist/app.js",
+    "preview": "node dist/app.js",
     "build": "tsc",
     "clean": "rm -rf dist",
     "db:migrate": "npx prisma migrate dev",
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push",
-    "db:studio": "npx prisma studio"
+    "db:studio": "npx prisma studio",
+    "db:reset": "npx prisma migrate reset --force"
   },
   "dependencies": {
     "@prisma/client": "^5.12.0",
