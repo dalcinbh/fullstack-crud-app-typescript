@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useAppDispatch from '../../hooks/use-app.dispatch';
 import useAppSelector from '../../hooks/use-app.selector';
 import { updateProjectAsync, projectSelector, reset } from '../../slices/project.slice';
-import { Project, UpdateProjectRequest } from '../../interfaces/project.interface';
+import { Project } from '../../interfaces/project.interface';
 
 interface EditProjectModalProps {
   isOpen: boolean;

@@ -11,6 +11,7 @@ import { Table } from './Table';
 import AddProjectModal from './AddProjectModal';
 import EditProjectModal from './EditProjectModal';
 import TaskManagementModal from '../Task/TaskManagementModal';
+import { PaginationProvider } from '../../contexts/PaginationContext';
 
 const ProjectList = () => {
   const dispatch = useAppDispatch();
@@ -51,10 +52,10 @@ const ProjectList = () => {
     setSelectedProject(null);
   };
 
-  const handleProjectUpdated = () => {
+  const handleProjectUpdated = useCallback(() => {
     // Refresh the projects list after updating a project
     dispatch(getAllProjectsAsync());
-  };
+  }, [dispatch]);
 
   const handleManageTasks = useCallback((project: Project) => {
     setSelectedProjectForTasks(project);
@@ -65,6 +66,11 @@ const ProjectList = () => {
     setIsTaskModalOpen(false);
     setSelectedProjectForTasks(null);
   };
+
+  const handleProjectsUpdate = useCallback(() => {
+    // Refresh the projects list after task operations
+    dispatch(getAllProjectsAsync());
+  }, [dispatch]);
 
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
@@ -247,67 +253,75 @@ const ProjectList = () => {
   const data: Project[] = projects || [];
 
   return (
-    <div className="mt-2 flex flex-col items-center">
-      <div className="mt-2 flex flex-col items-start w-full">
-        <div className="flex justify-between items-center w-full mb-6">
-          <div className="flex-col items-start">
-            <div className="font-semibold text-xl md:text-2xl text-gray-900 mt-2">
-              <h2>Projects</h2>
-            </div>
-            <div className="text-sm md:text-base text-gray-600 mb-0">
-              <span>Manage your projects and track progress</span>
-            </div>
-            <div className="text-sm text-gray-500">
-              <span>Total Projects: {data.length}</span>
-            </div>
-          </div>
-          
-          <button
-            onClick={handleAddProject}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Add New Project
-          </button>
-        </div>
-
-        <div className="relative w-full" style={{ minHeight: '35px' }}>
-          <div className="absolute inset-0 flex justify-center items-center">
-            {loading && (
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span className="text-gray-600">Loading projects...</span>
+    <PaginationProvider>
+      <div className="mt-2 flex flex-col items-center">
+        <div className="mt-2 flex flex-col items-start w-full">
+          <div className="flex justify-between items-center w-full mb-6">
+            <div className="flex-col items-start">
+              <div className="font-semibold text-xl md:text-2xl text-gray-900 mt-2">
+                <h2>Projects</h2>
               </div>
-            )}
+              <div className="text-sm md:text-base text-gray-600 mb-0">
+                <span>Manage your projects and track progress</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                <span>Total Projects: {data.length}</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleAddProject}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              Add New Project
+            </button>
+          </div>
+
+          <div className="relative w-full" style={{ minHeight: '35px' }}>
+            <div className="absolute inset-0 flex justify-center items-center">
+              {loading && (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <span className="text-gray-600">Loading projects...</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {!loading && (
+          <Table 
+            data={data} 
+            columns={columns} 
+            pageSize={projectPageSize}
+          />
+        )}
+
+        <AddProjectModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleProjectAdded}
+        />
+
+        {selectedProject && (
+          <EditProjectModal
+            isOpen={isEditModalOpen}
+            onClose={handleCloseEditModal}
+            onSuccess={handleProjectUpdated}
+            project={selectedProject}
+          />
+        )}
+
+        {selectedProjectForTasks && (
+          <TaskManagementModal
+            isOpen={isTaskModalOpen}
+            onClose={handleCloseTaskModal}
+            project={selectedProjectForTasks}
+            onProjectsUpdate={handleProjectsUpdate}
+          />
+        )}
       </div>
-
-      {!loading && <Table data={data} columns={columns} pageSize={projectPageSize} />}
-
-      <AddProjectModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSuccess={handleProjectAdded}
-      />
-
-      {selectedProject && (
-        <EditProjectModal
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
-          onSuccess={handleProjectUpdated}
-          project={selectedProject}
-        />
-      )}
-
-      {selectedProjectForTasks && (
-        <TaskManagementModal
-          isOpen={isTaskModalOpen}
-          onClose={handleCloseTaskModal}
-          project={selectedProjectForTasks}
-          onProjectsUpdate={() => dispatch(getAllProjectsAsync())}
-        />
-      )}
-    </div>
+    </PaginationProvider>
   );
 };
 

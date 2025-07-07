@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,12 +9,14 @@ import {
   ColumnDef,
   SortingState,
   FilterFn,
+  PaginationState,
+  Updater,
 } from '@tanstack/react-table';
 import useAppDispatch from '../../hooks/use-app.dispatch';
-import { updateTaskStatusAsync, deleteTaskAsync } from '../../slices/task.slice';
-import { getAllProjectsAsync } from '../../slices/project.slice';
 import { Task } from '../../interfaces/task.interface';
+import { deleteTaskAsync, updateTaskStatusAsync } from '../../slices/task.slice';
 import { formatDateToBR } from '../../utils/dateFormat';
+import { usePaginationContext } from '../../contexts/PaginationContext';
 
 interface TaskTableProps {
   data: Task[];
@@ -36,50 +38,45 @@ interface TaskStatusCellProps {
 
 const TaskStatusCell: React.FC<TaskStatusCellProps> = ({ task, projectId, onUpdate }) => {
   const dispatch = useAppDispatch();
-  const [selectedStatus, setSelectedStatus] = useState(task.isCompleted ? 'completed' : 'pending');
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [status, setStatus] = React.useState(task.isCompleted);
+  const [hasChanges, setHasChanges] = React.useState(false);
 
-  const handleStatusChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = event.target.value;
-    setSelectedStatus(newStatus);
-    setHasPendingChanges(newStatus !== (task.isCompleted ? 'completed' : 'pending'));
-  }, [task.isCompleted]);
+  const handleStatusChange = (newStatus: boolean) => {
+    setStatus(newStatus);
+    setHasChanges(newStatus !== task.isCompleted);
+  };
 
-  const handleSave = useCallback(async () => {
+  const handleSave = async () => {
     try {
-      const isCompleted = selectedStatus === 'completed';
       await dispatch(updateTaskStatusAsync({
         id: task.id.toString(),
         projectId: projectId,
-        isCompleted: isCompleted
+        isCompleted: status,
       }));
-      
+      setHasChanges(false);
       if (onUpdate) {
         onUpdate();
       }
-      dispatch(getAllProjectsAsync());
-      
-      setHasPendingChanges(false);
     } catch (error) {
       console.error('Error updating task status:', error);
     }
-  }, [dispatch, task.id, projectId, selectedStatus, onUpdate]);
+  };
 
   return (
     <div className="flex items-center space-x-2">
       <select
-        value={selectedStatus}
-        onChange={handleStatusChange}
-        className="text-sm border border-gray-300 rounded-md py-1 px-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+        value={status ? 'completed' : 'pending'}
+        onChange={(e) => handleStatusChange(e.target.value === 'completed')}
+        className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="pending">Pending</option>
         <option value="completed">Completed</option>
       </select>
-      {hasPendingChanges && (
+      
+      {hasChanges && (
         <button
           onClick={handleSave}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded-md transition-colors font-medium"
-          title="Save changes"
+          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
         >
           Save
         </button>
@@ -92,9 +89,12 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
   const dispatch = useAppDispatch();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
-
+  
   // Read page size from environment variables
   const taskPageSize = Number(process.env.REACT_APP_TASK_LIST_SIZE_PAGE) || 5;
+  
+  // Use pagination context
+  const { taskPageIndex, setTaskPageIndex } = usePaginationContext();
 
   const handleDeleteTask = useCallback((task: Task) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
@@ -202,19 +202,25 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
     state: {
       sorting,
       globalFilter,
+      pagination: {
+        pageIndex: taskPageIndex,
+        pageSize: taskPageSize,
+      },
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater: Updater<PaginationState>) => {
+      const newPaginationState = typeof updater === 'function' 
+        ? updater({ pageIndex: taskPageIndex, pageSize: taskPageSize })
+        : updater;
+      setTaskPageIndex(newPaginationState.pageIndex);
+    },
     globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: taskPageSize,
-      },
-    },
+    autoResetPageIndex: false,
   });
 
   const totalPages = table.getPageCount();
@@ -330,4 +336,4 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
       </div>
     </div>
   );
-} 
+}; 

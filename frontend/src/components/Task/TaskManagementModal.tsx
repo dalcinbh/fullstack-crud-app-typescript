@@ -4,7 +4,6 @@ import useAppSelector from '../../hooks/use-app.selector';
 import { getAllTasksAsync, taskSelector, reset } from '../../slices/task.slice';
 import { getAllProjectsAsync } from '../../slices/project.slice';
 import { Project } from '../../interfaces/project.interface';
-import { Task } from '../../interfaces/task.interface';
 import { TaskTable } from './TaskTable';
 import AddTaskModal from './AddTaskModal';
 
@@ -37,7 +36,10 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
   // Refresh tasks and projects after any successful operation
   useEffect(() => {
     if (insertSuccess || updateSuccess || deleteSuccess) {
+      // Refresh tasks
       dispatch(getAllTasksAsync(project.id));
+      
+      // Refresh projects
       dispatch(getAllProjectsAsync());
       if (onProjectsUpdate) {
         onProjectsUpdate();
@@ -59,8 +61,10 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
   }, []);
 
   const handleTaskUpdate = useCallback(() => {
-    // Refresh tasks and trigger projects update
+    // Refresh tasks
     dispatch(getAllTasksAsync(project.id));
+    
+    // Refresh projects
     dispatch(getAllProjectsAsync());
     if (onProjectsUpdate) {
       onProjectsUpdate();

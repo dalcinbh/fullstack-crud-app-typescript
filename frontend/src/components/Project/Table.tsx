@@ -9,7 +9,10 @@ import {
   ColumnDef,
   SortingState,
   FilterFn,
+  PaginationState,
+  Updater,
 } from '@tanstack/react-table';
+import { usePaginationContext } from '../../contexts/PaginationContext';
 
 interface TableProps<T> {
   data: T[];
@@ -26,6 +29,9 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 export function Table<T>({ data, columns, pageSize = 10 }: TableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
+  
+  // Use pagination context
+  const { projectPageIndex, setProjectPageIndex } = usePaginationContext();
 
   const table = useReactTable({
     data,
@@ -36,19 +42,25 @@ export function Table<T>({ data, columns, pageSize = 10 }: TableProps<T>) {
     state: {
       sorting,
       globalFilter,
+      pagination: {
+        pageIndex: projectPageIndex,
+        pageSize: pageSize,
+      },
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater: Updater<PaginationState>) => {
+      const newPaginationState = typeof updater === 'function' 
+        ? updater({ pageIndex: projectPageIndex, pageSize })
+        : updater;
+      setProjectPageIndex(newPaginationState.pageIndex);
+    },
     globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: pageSize,
-      },
-    },
+    autoResetPageIndex: false,
   });
 
   const totalPages = table.getPageCount();
