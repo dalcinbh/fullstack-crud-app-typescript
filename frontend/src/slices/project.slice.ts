@@ -19,15 +19,19 @@ const initialState: ProjectStates = {
 // Insert Project
 export const insertProjectAsync = createAsyncThunk(
   'projects/insertProject',
-  async (formData: FormData, thunkAPI) => {
+  async (
+    data: { name: string; description: string; startDate: string },
+    thunkAPI
+  ) => {
     try {
-      const project = await ProjectService.insertProject(formData);
-      return project; // Backend returns a project with bounds
+      const project = await ProjectService.insertProject(data);
+      return project;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
-  },
+  }
 );
+
 
 // Update Project
 export const updateProjectAsync = createAsyncThunk(

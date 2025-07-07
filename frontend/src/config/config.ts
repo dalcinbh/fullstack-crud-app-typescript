@@ -1,7 +1,9 @@
 const apiEnv: string = process.env.REACT_APP_URL_BASE_API || '';
-export const api: string = apiEnv ? apiEnv : '';
+const api: string = apiEnv ? apiEnv : '';
 
-export const requestConfig = (
+console.log(api);
+
+const requestConfig = (
   method: string,
   data: any,
 ) => {
@@ -24,3 +26,5 @@ export const requestConfig = (
 
   return config;
 };
+
+export { api, requestConfig };

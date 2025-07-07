@@ -76,18 +76,14 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     if (!validateForm()) {
       return;
     }
-
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('startDate', formData.startDate);
-
-    dispatch(insertProjectAsync(formDataToSend));
+  
+    dispatch(insertProjectAsync(formData));
   };
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

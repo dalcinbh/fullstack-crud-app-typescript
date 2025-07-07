@@ -103,6 +103,7 @@ const ProjectList = () => {
         filterFn: 'includesString',
       },
       {
+        id: 'tasks-count',
         header: 'Tasks',
         accessorKey: 'tasks',
         cell: (info) => {
@@ -120,6 +121,7 @@ const ProjectList = () => {
         enableColumnFilter: false,
       },
       {
+        id: 'project-status',
         header: 'Status',
         accessorKey: 'tasks',
         cell: (info) => {

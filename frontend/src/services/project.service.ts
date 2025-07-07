@@ -12,17 +12,18 @@ const handleResponse = async (res: Response) => {
 
 // Insert Project
 const insertProject = async (
-  formData: FormData,
+  data: { name: string; description: string; startDate: string }
 ): Promise<Project> => {
-  const config = requestConfig('POST', formData); // true for multipart/form-data
+  const config = requestConfig('POST', data);
   try {
-    const res = await fetch(`${api}/projects/uploadfile`, config);
-    const data = await handleResponse(res);
-    return data as Project;
+    const res = await fetch(`${api}/projects`, config);
+    const result = await handleResponse(res);
+    return result as Project;
   } catch (error: any) {
     throw error;
   }
 };
+
 
 // Update Project
 const updateProject = async (
