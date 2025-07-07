@@ -1,6 +1,9 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "project-management-system-frontend",
+  "version": "1.0.0",
+  "description": "Frontend UI for the Full Stack Project Management System using React, TypeScript, Tailwind CSS, and Redux Toolkit",
+  "author": "Adriano",
+  "license": "MIT",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
