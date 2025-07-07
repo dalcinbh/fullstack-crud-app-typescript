@@ -1,7 +1,7 @@
 import { Project as ProjectInterface } from '../interfaces/project.interface.js';
 import { Task } from '../interfaces/task.interface.js';
 import prisma from '../config/prisma.js';
-const projectListSizePage = parseInt(process.env.PROJECT_LIST_SIZE_PAGE || '10');
+
 export class Project {
   private data: ProjectInterface;
 
@@ -10,40 +10,32 @@ export class Project {
   }
 
   /**
-   * Get all projects from database
+   * Get all projects with optional filtering
    */
   static async getAllProjects(options?: {
-    page?: number;
-    limit?: number;
     search?: string;
-  }): Promise<{ projects: ProjectInterface[]; total: number }> {
+  }): Promise<{ projects: ProjectInterface[] }> {
     try {
-      const { page = 1, limit = projectListSizePage, search } = options || {};
-      const skip = (page - 1) * limit;
+      const { search } = options || {};
       
       const where = search ? {
         OR: [
-          { name: { contains: search } },
-          { description: { contains: search } }
+          { name: { contains: search as string } },
+          { description: { contains: search as string } }
         ]
       } : {};
 
-      const [projects, total] = await Promise.all([
-        prisma.project.findMany({
-          where,
-          include: {
-            tasks: {
-              orderBy: { createdAt: 'desc' }
-            }
-          },
-          orderBy: { createdAt: 'desc' },
-          skip,
-          take: limit
-        }),
-        prisma.project.count({ where })
-      ]);
+      const projects = await prisma.project.findMany({
+        where,
+        include: {
+          tasks: {
+            orderBy: { createdAt: 'desc' }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
 
-      return { projects, total };
+      return { projects };
     } catch (error) {
       console.error('Error getting all projects:', error);
       throw error;
@@ -51,9 +43,9 @@ export class Project {
   }
 
   /**
-   * Get a project by ID
+   * Get a project by ID with validation
    */
-  static async getProjectById(id: number): Promise<ProjectInterface | null> {
+  static async getProjectById(id: number): Promise<{ project: ProjectInterface | null; exists: boolean }> {
     try {
       const project = await prisma.project.findUnique({
         where: { id },
@@ -64,7 +56,10 @@ export class Project {
         }
       });
 
-      return project;
+      return {
+        project,
+        exists: project !== null
+      };
     } catch (error) {
       console.error('Error getting project by ID:', error);
       throw error;
@@ -72,27 +67,28 @@ export class Project {
   }
 
   /**
-   * Create a new project
+   * Create a new project with proper validation
    */
-  static async insertProject(projectData: {
+  static async createProject(projectData: {
     name: string;
     description: string;
     startDate: Date;
-    tasks?: Task[];
+    tasks?: any[];
   }): Promise<ProjectInterface> {
     try {
+      // Create project with optional tasks
       const data: any = {
         name: projectData.name,
         description: projectData.description,
         startDate: projectData.startDate
       };
 
-      if (projectData.tasks && projectData.tasks.length > 0) {
+      if (projectData.tasks && Array.isArray(projectData.tasks)) {
         data.tasks = {
-          create: projectData.tasks.map(task => ({
+          create: projectData.tasks.map((task: any) => ({
             title: task.title,
             description: task.description,
-            dueDate: task.dueDate,
+            dueDate: new Date(task.dueDate),
             isCompleted: task.isCompleted || false
           }))
         };
@@ -107,23 +103,38 @@ export class Project {
 
       return project;
     } catch (error) {
-      console.error('Error inserting project:', error);
+      console.error('Error creating project:', error);
       throw error;
     }
   }
 
   /**
-   * Update an existing project
+   * Update an existing project with validation
    */
   static async updateProject(id: number, updateData: {
     name?: string;
     description?: string;
     startDate?: Date;
-  }): Promise<ProjectInterface | null> {
+  }): Promise<{ project: ProjectInterface | null; exists: boolean }> {
     try {
+      // Check if project exists
+      const existingProject = await prisma.project.findUnique({
+        where: { id }
+      });
+
+      if (!existingProject) {
+        return { project: null, exists: false };
+      }
+
+      // Update project
+      const data: any = {};
+      if (updateData.name) data.name = updateData.name;
+      if (updateData.description) data.description = updateData.description;
+      if (updateData.startDate) data.startDate = updateData.startDate;
+
       const project = await prisma.project.update({
         where: { id },
-        data: updateData,
+        data,
         include: {
           tasks: {
             orderBy: { createdAt: 'desc' }
@@ -131,7 +142,7 @@ export class Project {
         }
       });
 
-      return project;
+      return { project, exists: true };
     } catch (error) {
       console.error('Error updating project:', error);
       throw error;
@@ -139,178 +150,67 @@ export class Project {
   }
 
   /**
-   * Delete a project
+   * Delete a project with validation
    */
-  static async deleteProject(id: number): Promise<boolean> {
+  static async deleteProject(id: number): Promise<{ success: boolean; exists: boolean }> {
     try {
+      // Check if project exists
+      const existingProject = await prisma.project.findUnique({
+        where: { id }
+      });
+
+      if (!existingProject) {
+        return { success: false, exists: false };
+      }
+
+      // Delete project (tasks will be deleted automatically due to cascade)
       await prisma.project.delete({
         where: { id }
       });
 
-      return true;
+      return { success: true, exists: true };
     } catch (error) {
       console.error('Error deleting project:', error);
       throw error;
     }
   }
 
-  /**
-   * Get projects with task counts
-   */
-  static async getProjectsWithTaskCounts(): Promise<(ProjectInterface & {
-    taskStats: {
-      totalTasks: number;
-      completedTasks: number;
-      pendingTasks: number;
-      completionPercentage: number;
-    }
-  })[]> {
-    try {
-      const projects = await prisma.project.findMany({
-        include: {
-          tasks: true
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      return projects.map(project => {
-        const totalTasks = project.tasks?.length || 0;
-        const completedTasks = project.tasks?.filter(task => task.isCompleted).length || 0;
-        const pendingTasks = totalTasks - completedTasks;
-        const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-
-        return {
-          ...project,
-          taskStats: {
-            totalTasks,
-            completedTasks,
-            pendingTasks,
-            completionPercentage: Math.round(completionPercentage)
-          }
-        };
-      });
-    } catch (error) {
-      console.error('Error getting projects with task counts:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get projects by status
-   */
-  static async getProjectsByStatus(status: 'completed' | 'in_progress' | 'not_started'): Promise<ProjectInterface[]> {
-    try {
-      const projects = await prisma.project.findMany({
-        include: {
-          tasks: true
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      return projects.filter(project => {
-        const totalTasks = project.tasks?.length || 0;
-        const completedTasks = project.tasks?.filter(task => task.isCompleted).length || 0;
-
-        switch (status) {
-          case 'completed':
-            return totalTasks > 0 && completedTasks === totalTasks;
-          case 'in_progress':
-            return totalTasks > 0 && completedTasks > 0 && completedTasks < totalTasks;
-          case 'not_started':
-            return totalTasks === 0 || completedTasks === 0;
-          default:
-            return false;
-        }
-      });
-    } catch (error) {
-      console.error('Error getting projects by status:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Search projects by name or description
-   */
-  static async searchProjects(searchTerm: string): Promise<ProjectInterface[]> {
-    try {
-      const projects = await prisma.project.findMany({
-        where: {
-          OR: [
-            { name: { contains: searchTerm } },
-            { description: { contains: searchTerm } }
-          ]
-        },
-        include: {
-          tasks: {
-            orderBy: { createdAt: 'desc' }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      return projects;
-    } catch (error) {
-      console.error('Error searching projects:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get project data
-   */
+  // Instance methods
   get projectData(): ProjectInterface {
     return this.data;
   }
 
-  /**
-   * Update project data
-   */
   updateData(newData: Partial<ProjectInterface>): void {
     this.data = { ...this.data, ...newData };
   }
 
-  /**
-   * Get project duration in days
-   */
   getProjectDuration(): number {
+    if (!this.data.startDate) return 0;
+    const today = new Date();
     const startDate = new Date(this.data.startDate);
-    const now = new Date();
-    const diffTime = now.getTime() - startDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
+    const diffTime = today.getTime() - startDate.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  /**
-   * Check if project is recently created (within last 7 days)
-   */
   isRecentlyCreated(): boolean {
+    if (!this.data.createdAt) return false;
+    const today = new Date();
     const createdAt = new Date(this.data.createdAt);
-    const now = new Date();
-    const diffTime = now.getTime() - createdAt.getTime();
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffTime = today.getTime() - createdAt.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 7;
   }
 
-  /**
-   * Get project status based on tasks
-   */
   getProjectStatus(): 'completed' | 'in_progress' | 'not_started' {
     const tasks = this.data.tasks || [];
-    const totalTasks = tasks.length;
+    if (tasks.length === 0) return 'not_started';
+    
     const completedTasks = tasks.filter(task => task.isCompleted).length;
-
-    if (totalTasks === 0 || completedTasks === 0) {
-      return 'not_started';
-    } else if (completedTasks === totalTasks) {
-      return 'completed';
-    } else {
-      return 'in_progress';
-    }
+    if (completedTasks === 0) return 'not_started';
+    if (completedTasks === tasks.length) return 'completed';
+    return 'in_progress';
   }
 
-  /**
-   * Get basic project statistics
-   */
   getBasicStats(): {
     totalTasks: number;
     completedTasks: number;

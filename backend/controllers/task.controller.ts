@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Task } from '../interfaces/task.interface.js';
-import prisma from '../config/prisma.js';
+import { Task as TaskClass } from '../classes/task.class.js';
 
 /**
  * Get all tasks for a specific project
@@ -17,12 +17,9 @@ export const getAllTasks = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Check if project exists
-    const project = await prisma.project.findUnique({
-      where: { id: Number(projectId) }
-    });
+    const result = await TaskClass.getTasksByProjectId(Number(projectId));
 
-    if (!project) {
+    if (!result.projectExists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -30,15 +27,9 @@ export const getAllTasks = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Get all tasks for the project
-    const tasks = await prisma.task.findMany({
-      where: { projectId: Number(projectId) },
-      orderBy: { createdAt: 'desc' }
-    });
-
     res.json({
       success: true,
-      data: tasks
+      data: result.tasks
     });
   } catch (error) {
     console.error('Error getting tasks:', error);
@@ -75,12 +66,14 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Check if project exists
-    const project = await prisma.project.findUnique({
-      where: { id: Number(projectId) }
+    const result = await TaskClass.createTask({
+      projectId: Number(projectId),
+      title,
+      description,
+      dueDate: new Date(dueDate)
     });
 
-    if (!project) {
+    if (!result.projectExists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -88,20 +81,9 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Create task
-    const task = await prisma.task.create({
-      data: {
-        projectId: Number(projectId),
-        title,
-        description,
-        dueDate: new Date(dueDate),
-        isCompleted: false
-      }
-    });
-
     res.status(201).json({
       success: true,
-      data: task,
+      data: result.task,
       message: 'Task created successfully'
     });
   } catch (error) {
@@ -138,12 +120,19 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Check if project exists
-    const project = await prisma.project.findUnique({
-      where: { id: Number(projectId) }
-    });
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (dueDate !== undefined) updateData.dueDate = new Date(dueDate);
+    if (isCompleted !== undefined) updateData.isCompleted = Boolean(isCompleted);
 
-    if (!project) {
+    const result = await TaskClass.updateTask(
+      Number(projectId),
+      Number(taskId),
+      updateData
+    );
+
+    if (!result.projectExists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -151,12 +140,7 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Check if task exists and belongs to the project
-    const existingTask = await prisma.task.findUnique({
-      where: { id: Number(taskId) }
-    });
-
-    if (!existingTask) {
+    if (!result.taskExists) {
       res.status(404).json({
         success: false,
         message: 'Task not found'
@@ -164,7 +148,7 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (existingTask.projectId !== Number(projectId)) {
+    if (!result.taskBelongsToProject) {
       res.status(403).json({
         success: false,
         message: 'Task does not belong to this project'
@@ -172,22 +156,9 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Build update data
-    const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (dueDate !== undefined) updateData.dueDate = new Date(dueDate);
-    if (isCompleted !== undefined) updateData.isCompleted = Boolean(isCompleted);
-
-    // Update task
-    const updatedTask = await prisma.task.update({
-      where: { id: Number(taskId) },
-      data: updateData
-    });
-
     res.json({
       success: true,
-      data: updatedTask,
+      data: result.task,
       message: 'Task updated successfully'
     });
   } catch (error) {
@@ -223,12 +194,12 @@ export const toggleTaskCompletion = async (req: Request, res: Response): Promise
       return;
     }
 
-    // Check if project exists
-    const project = await prisma.project.findUnique({
-      where: { id: Number(projectId) }
-    });
+    const result = await TaskClass.toggleTaskCompletion(
+      Number(projectId),
+      Number(taskId)
+    );
 
-    if (!project) {
+    if (!result.projectExists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -236,12 +207,7 @@ export const toggleTaskCompletion = async (req: Request, res: Response): Promise
       return;
     }
 
-    // Check if task exists and belongs to the project
-    const existingTask = await prisma.task.findUnique({
-      where: { id: Number(taskId) }
-    });
-
-    if (!existingTask) {
+    if (!result.taskExists) {
       res.status(404).json({
         success: false,
         message: 'Task not found'
@@ -249,7 +215,7 @@ export const toggleTaskCompletion = async (req: Request, res: Response): Promise
       return;
     }
 
-    if (existingTask.projectId !== Number(projectId)) {
+    if (!result.taskBelongsToProject) {
       res.status(403).json({
         success: false,
         message: 'Task does not belong to this project'
@@ -257,16 +223,10 @@ export const toggleTaskCompletion = async (req: Request, res: Response): Promise
       return;
     }
 
-    // Toggle completion status
-    const updatedTask = await prisma.task.update({
-      where: { id: Number(taskId) },
-      data: { isCompleted: !existingTask.isCompleted }
-    });
-
     res.json({
       success: true,
-      data: updatedTask,
-      message: `Task marked as ${updatedTask.isCompleted ? 'completed' : 'pending'}`
+      data: result.task,
+      message: `Task marked as ${result.task?.isCompleted ? 'completed' : 'pending'}`
     });
   } catch (error) {
     console.error('Error toggling task completion:', error);
@@ -301,12 +261,12 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Check if project exists
-    const project = await prisma.project.findUnique({
-      where: { id: Number(projectId) }
-    });
+    const result = await TaskClass.deleteTask(
+      Number(projectId),
+      Number(taskId)
+    );
 
-    if (!project) {
+    if (!result.projectExists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -314,12 +274,7 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Check if task exists and belongs to the project
-    const existingTask = await prisma.task.findUnique({
-      where: { id: Number(taskId) }
-    });
-
-    if (!existingTask) {
+    if (!result.taskExists) {
       res.status(404).json({
         success: false,
         message: 'Task not found'
@@ -327,18 +282,13 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (existingTask.projectId !== Number(projectId)) {
+    if (!result.taskBelongsToProject) {
       res.status(403).json({
         success: false,
         message: 'Task does not belong to this project'
       });
       return;
     }
-
-    // Delete task
-    await prisma.task.delete({
-      where: { id: Number(taskId) }
-    });
 
     res.json({
       success: true,
@@ -367,9 +317,7 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const task = await prisma.task.findUnique({
-      where: { id: parsedId }
-    });
+    const task = await TaskClass.getTaskById(parsedId);
     
     if (!task) {
       res.status(404).json({ error: 'Task not found' });
@@ -396,14 +344,7 @@ export const getProjectTaskStats = async (req: Request, res: Response): Promise<
       return;
     }
 
-    const stats = await prisma.task.groupBy({
-      by: ['isCompleted'],
-      where: { projectId: parsedProjectId },
-      _count: {
-        isCompleted: true
-      }
-    });
-
+    const stats = await TaskClass.getProjectTaskStats(parsedProjectId);
     res.json(stats);
   } catch (error) {
     console.error('Error in getProjectTaskStats:', error);
@@ -424,16 +365,7 @@ export const getOverdueTasks = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const tasks = await prisma.task.findMany({
-      where: {
-        projectId: parsedProjectId,
-        dueDate: {
-          lt: new Date()
-        }
-      },
-      orderBy: { dueDate: 'desc' }
-    });
-
+    const tasks = await TaskClass.getOverdueTasks(parsedProjectId);
     res.json(tasks);
   } catch (error) {
     console.error('Error in getOverdueTasks:', error);
@@ -461,20 +393,10 @@ export const markTasksAsCompleted = async (req: Request, res: Response): Promise
       return;
     }
 
-    const updatedCount = await prisma.task.updateMany({
-      where: {
-        id: {
-          in: parsedTaskIds
-        }
-      },
-      data: {
-        isCompleted: true
-      }
-    });
-
+    const result = await TaskClass.markTasksAsCompleted(parsedTaskIds);
     res.json({ 
-      message: `${updatedCount.count} tasks marked as completed`,
-      updatedCount: updatedCount.count 
+      message: `${result.count} tasks marked as completed`,
+      updatedCount: result.count 
     });
   } catch (error) {
     console.error('Error in markTasksAsCompleted:', error);

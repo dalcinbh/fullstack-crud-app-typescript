@@ -1,47 +1,21 @@
 import { Request, Response } from 'express';
 import { Project } from '../classes/project.class.js';
 import { Project as ProjectInterface } from '../interfaces/project.interface.js';
-import prisma from '../config/prisma.js';
 
 /**
- * Get all projects with optional pagination and filtering
+ * Get all projects with optional filtering
  */
 export const getAllProjects = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const { search } = req.query;
     
-    const where = search ? {
-      OR: [
-        { name: { contains: search as string } },
-        { description: { contains: search as string } }
-      ]
-    } : {};
-
-    const [projects, total] = await Promise.all([
-      prisma.project.findMany({
-        where,
-        include: {
-          tasks: {
-            orderBy: { createdAt: 'desc' }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: Number(limit)
-      }),
-      prisma.project.count({ where })
-    ]);
+    const result = await Project.getAllProjects({
+      search: search as string
+    });
 
     res.json({
       success: true,
-      data: projects,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit))
-      }
+      data: result.projects
     });
   } catch (error) {
     console.error('Error getting projects:', error);
@@ -68,16 +42,9 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const project = await prisma.project.findUnique({
-      where: { id: Number(id) },
-      include: {
-        tasks: {
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
+    const result = await Project.getProjectById(Number(id));
 
-    if (!project) {
+    if (!result.exists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -87,7 +54,7 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 
     res.json({
       success: true,
-      data: project
+      data: result.project
     });
   } catch (error) {
     console.error('Error getting project:', error);
@@ -105,6 +72,7 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 export const insertProject = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, startDate, tasks } = req.body;
+    
     // Validation
     if (!name || !description || !startDate) {
       res.status(400).json({
@@ -114,29 +82,11 @@ export const insertProject = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Create project with optional tasks
-    const projectData: any = {
+    const project = await Project.createProject({
       name,
       description,
-      startDate: new Date(startDate)
-    };
-
-    if (tasks && Array.isArray(tasks)) {
-      projectData.tasks = {
-        create: tasks.map((task: any) => ({
-          title: task.title,
-          description: task.description,
-          dueDate: new Date(task.dueDate),
-          isCompleted: task.isCompleted || false
-        }))
-      };
-    }
-
-    const project = await prisma.project.create({
-      data: projectData,
-      include: {
-        tasks: true
-      }
+      startDate: new Date(startDate),
+      tasks
     });
 
     res.status(201).json({
@@ -170,12 +120,14 @@ export const updateProject = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id: Number(id) }
-    });
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (startDate) updateData.startDate = new Date(startDate);
 
-    if (!existingProject) {
+    const result = await Project.updateProject(Number(id), updateData);
+
+    if (!result.exists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
@@ -183,25 +135,9 @@ export const updateProject = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Update project
-    const updateData: any = {};
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
-    if (startDate) updateData.startDate = new Date(startDate);
-
-    const project = await prisma.project.update({
-      where: { id: Number(id) },
-      data: updateData,
-      include: {
-        tasks: {
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
-
     res.json({
       success: true,
-      data: project,
+      data: result.project,
       message: 'Project updated successfully'
     });
   } catch (error) {
@@ -229,23 +165,15 @@ export const deleteProject = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id: Number(id) }
-    });
+    const result = await Project.deleteProject(Number(id));
 
-    if (!existingProject) {
+    if (!result.exists) {
       res.status(404).json({
         success: false,
         message: 'Project not found'
       });
       return;
     }
-
-    // Delete project (tasks will be deleted automatically due to cascade)
-    await prisma.project.delete({
-      where: { id: Number(id) }
-    });
 
     res.json({
       success: true,
