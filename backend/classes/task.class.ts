@@ -1,5 +1,6 @@
 import { Task as TaskInterface } from '../interfaces/task.interface.js';
 import prisma from '../config/prisma.js';
+const taskListSizePage = parseInt(process.env.TASK_LIST_SIZE_PAGE || '10');
 
 export class Task {
   private data: TaskInterface;

@@ -1,7 +1,7 @@
 import { Project as ProjectInterface } from '../interfaces/project.interface.js';
 import { Task } from '../interfaces/task.interface.js';
 import prisma from '../config/prisma.js';
-
+const projectListSizePage = parseInt(process.env.PROJECT_LIST_SIZE_PAGE || '10');
 export class Project {
   private data: ProjectInterface;
 
@@ -18,7 +18,7 @@ export class Project {
     search?: string;
   }): Promise<{ projects: ProjectInterface[]; total: number }> {
     try {
-      const { page = 1, limit = 10, search } = options || {};
+      const { page = 1, limit = projectListSizePage, search } = options || {};
       const skip = (page - 1) * limit;
       
       const where = search ? {
