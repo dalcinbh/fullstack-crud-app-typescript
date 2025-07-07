@@ -1,19 +1,42 @@
-# Backend API - Project Management System
+# Project Management System - Full Stack Application
 
-A modern, well-architected REST API built with TypeScript, Express, and Prisma using ESM (ES Modules). This backend implements clean architecture principles with comprehensive validation, proper separation of concerns, and production-ready features.
+A modern, full-stack project management application built with **React TypeScript frontend** and **Node.js backend API**. This system provides comprehensive project and task management capabilities with a clean, responsive interface and robust backend architecture.
 
-## 🏗️ Architecture
+## 🏗️ System Overview
 
-This API follows **Clean Architecture** principles with:
+This application is a complete project management solution featuring:
 
-- **Controllers**: HTTP interface layer handling request/response formatting
-- **Business Logic Classes**: Domain logic encapsulated in dedicated classes
-- **Database Layer**: Prisma ORM with proper connection management
-- **Interfaces**: TypeScript contracts ensuring type safety across layers
-- **Validation**: Multi-step validation chains for data integrity
+### **Frontend (React + TypeScript)**
+- **React 19.1.0** with TypeScript for type-safe UI development
+- **Redux Toolkit** for centralized state management
+- **Tailwind CSS** for modern, responsive styling
+- **TanStack Table** for advanced data table functionality
+- **Modal-based workflows** for creating and editing projects/tasks
 
-## 🚀 Tech Stack
+### **Backend (Node.js + Express)**
+- **RESTful API** with TypeScript and Express
+- **Clean Architecture** with separation of concerns
+- **Prisma ORM** for type-safe database operations
+- **MySQL database** with proper relational structure
+- **ESM (ES Modules)** for modern JavaScript development
 
+### **Database (MySQL)**
+- **Projects table** with basic project information
+- **Tasks table** with foreign key relationships
+- **Cascade deletion** for data integrity
+- **Proper indexing** for optimal query performance
+
+## 🚀 Full Stack Tech Stack
+
+### Frontend Technologies
+- **React 19.1.0** - Modern UI library with hooks and concurrent features
+- **TypeScript 5.4.2** - Type-safe development
+- **Redux Toolkit 2.8.2** - State management with async thunks
+- **Tailwind CSS 3.4.17** - Utility-first CSS framework
+- **TanStack React Table 8.21.3** - Advanced table functionality
+- **React Redux 9.2.0** - React-Redux integration
+
+### Backend Technologies
 - **Node.js 18.20.8+** - Runtime environment
 - **TypeScript 5.4.2** - Type-safe development with ESM
 - **Express 4.18.2** - Web framework with middleware support
@@ -26,63 +49,250 @@ This API follows **Clean Architecture** principles with:
 - **Node.js 18.20.8** or higher
 - **MySQL 8.0** or higher
 - **npm** or **yarn** package manager
+- **Git** for version control
 
-## 🔧 Quick Start
+## 🔧 Quick Start (Full System)
 
-### 1. Install Dependencies
+### 1. Clone Repository
 
 ```bash
+git clone <repository-url>
+cd project-management-system
+```
+
+### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install dependencies
 npm install
-```
 
-### 2. Environment Configuration
-
-```bash
-# Copy environment template
+# Configure environment variables
 cp .env.example .env
+# Edit .env with your database credentials
 
-# Configure your environment variables
-DATABASE_URL="mysql://username:password@localhost:3306/database_name"
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
-```
-
-### 3. Database Setup
-
-```bash
-# Generate Prisma client
+# Generate Prisma client and run migrations
 npm run db:generate
-
-# Run database migrations
 npm run db:migrate
 
-# Optional: Open Prisma Studio for database inspection
-npm run db:studio
-```
-
-### 4. Start Development Server
-
-```bash
+# Start backend development server
 npm run dev
 ```
 
-The API will be available at `http://localhost:5000`
+Backend will be available at `http://localhost:5000`
 
-## 🎯 Available Scripts
+### 3. Frontend Setup
+
+```bash
+# Navigate to frontend directory (from project root)
+cd frontend
+
+# Install dependencies
+npm install
+
+# Configure environment variables
+cp .env.development.example.local .env.development.local
+# Edit .env.development.local with your API URL
+
+# Start frontend development server
+npm start
+```
+
+Frontend will be available at `http://localhost:3000`
+
+## 🎯 Frontend Structure & Features
+
+### 📁 Frontend Project Structure
+
+```
+frontend/
+├── public/
+│   └── index.html           # Main HTML template
+├── src/
+│   ├── components/          # React components
+│   │   ├── Project/         # Project-related components
+│   │   │   ├── ProjectList.tsx      # Main project management interface
+│   │   │   ├── AddProjectModal.tsx  # Project creation modal
+│   │   │   ├── EditProjectModal.tsx # Project editing modal
+│   │   │   └── Table.tsx           # Reusable table component
+│   │   └── Task/            # Task-related components
+│   │       ├── TaskItem.tsx         # Individual task component
+│   │       ├── TaskTable.tsx        # Advanced task table
+│   │       ├── AddTaskModal.tsx     # Task creation modal
+│   │       └── TaskManagementModal.tsx # Task management interface
+│   ├── config/
+│   │   └── config.ts        # API configuration and HTTP client
+│   ├── hooks/               # Custom React hooks
+│   │   ├── use-app.dispatch.ts  # Type-safe Redux dispatch
+│   │   └── use-app.selector.ts  # Type-safe Redux selector
+│   ├── interfaces/          # TypeScript interfaces
+│   │   ├── project.interface.ts  # Project-related types
+│   │   └── task.interface.ts     # Task-related types
+│   ├── services/            # API service layer
+│   │   ├── project.service.ts    # Project API calls
+│   │   └── task.service.ts       # Task API calls
+│   ├── slices/              # Redux slices
+│   │   ├── project.slice.ts      # Project state management
+│   │   └── task.slice.ts         # Task state management
+│   ├── utils/               # Utility functions
+│   │   └── dateFormat.ts         # Date formatting utilities
+│   ├── App.tsx              # Main application component
+│   ├── index.tsx            # Application entry point
+│   ├── store.ts             # Redux store configuration
+│   └── index.css            # Global styles and Tailwind CSS
+├── package.json             # Dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+├── tailwind.config.js       # Tailwind CSS configuration
+└── postcss.config.js        # PostCSS configuration
+```
+
+### 🖥️ Frontend Features
+
+- **📊 Project Management**
+  - Create, edit, and delete projects
+  - View project lists with search functionality
+  - Project statistics and completion tracking
+  - Responsive table with sorting and pagination
+
+- **📋 Task Management**
+  - Create tasks within projects
+  - Edit task details and due dates
+  - Toggle task completion status
+  - Advanced task table with filtering
+  - Task priority visualization
+
+- **🎨 User Interface**
+  - Modern, responsive design with Tailwind CSS
+  - Modal-based workflows for better UX
+  - Loading states and error handling
+  - Consistent color scheme and typography
+
+- **⚡ Performance**
+  - Redux state management for efficient updates
+  - Optimistic updates for better responsiveness
+  - Memoized components to prevent unnecessary re-renders
+  - Efficient table virtualization for large datasets
+
+### 🎯 Frontend Available Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server with hot reload |
+| `npm start` | Start development server with hot reload |
 | `npm run build` | Build for production |
-| `npm run start` | Run production build |
-| `npm run clean` | Clean build directory |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:push` | Push schema changes to database |
-| `npm run db:studio` | Open Prisma Studio interface |
+| `npm run eject` | Eject from Create React App (irreversible) |
 
-## 📁 Project Structure
+## 🗄️ Database Structure
+
+### 📊 Database Schema Overview
+
+The system uses **MySQL** with a simple but effective relational structure designed for project management workflows.
+
+```sql
+-- Database: projects
+-- Character Set: utf8mb4
+-- Collation: utf8mb4_unicode_ci
+```
+
+### 🏗️ Tables Structure
+
+#### **Projects Table**
+
+```sql
+CREATE TABLE `Project` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(191) NOT NULL,
+  `description` text NOT NULL,
+  `startDate` datetime(3) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Field Descriptions:**
+- `id` - **Primary key**, auto-increment integer for unique project identification
+- `name` - **Project title**, varchar(191) for project name/title display
+- `description` - **Project details**, text field for comprehensive project description
+- `startDate` - **Project start date**, datetime with precision for project timeline
+- `createdAt` - **Record creation timestamp**, auto-generated when project is created
+- `updatedAt` - **Last modification timestamp**, auto-updated on any project changes
+
+#### **Tasks Table**
+
+```sql
+CREATE TABLE `Task` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `projectId` int NOT NULL,
+  `title` varchar(191) NOT NULL,
+  `description` text NOT NULL,
+  `dueDate` datetime(3) NOT NULL,
+  `isCompleted` tinyint(1) NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `Task_projectId_fkey` (`projectId`),
+  CONSTRAINT `Task_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Field Descriptions:**
+- `id` - **Primary key**, auto-increment integer for unique task identification
+- `projectId` - **Foreign key** referencing `Project.id`, establishes parent-child relationship
+- `title` - **Task name**, varchar(191) for task title/summary display
+- `description` - **Task details**, text field for comprehensive task description and requirements
+- `dueDate` - **Task deadline**, datetime with precision for task scheduling and priority
+- `isCompleted` - **Completion status**, boolean flag (0=pending, 1=completed) for task tracking
+- `createdAt` - **Record creation timestamp**, auto-generated when task is created
+- `updatedAt` - **Last modification timestamp**, auto-updated on any task changes
+
+### 🔗 Database Relationships
+
+#### **One-to-Many: Project → Tasks**
+
+```sql
+Project (1) ←→ Tasks (Many)
+```
+
+**Relationship Details:**
+- **Parent**: `Project` table
+- **Child**: `Task` table
+- **Foreign Key**: `Task.projectId` → `Project.id`
+- **Cascade Actions**: 
+  - `ON DELETE CASCADE` - When a project is deleted, all associated tasks are automatically deleted
+  - `ON UPDATE CASCADE` - When a project ID is updated, all associated task references are updated
+
+**Business Logic:**
+- Each project can have **multiple tasks** (0 to unlimited)
+- Each task **belongs to exactly one project**
+- Deleting a project **removes all its tasks** (data integrity)
+- Tasks cannot exist without a parent project (referential integrity)
+
+### 🎯 Database Features
+
+- **✅ ACID Compliance** - Full transaction support with MySQL InnoDB
+- **✅ Foreign Key Constraints** - Referential integrity between projects and tasks
+- **✅ Cascade Deletion** - Automatic cleanup of related data
+- **✅ Timestamp Tracking** - Automatic creation and update timestamps
+- **✅ UTF-8 Support** - Full Unicode support for international characters
+- **✅ Indexed Relationships** - Optimized queries with proper indexing
+
+### 📈 Database Performance
+
+**Indexing Strategy:**
+- Primary keys (`id`) are automatically indexed
+- Foreign key (`projectId`) has index for efficient JOIN operations
+- Timestamps are indexed for sorting and filtering operations
+
+**Query Optimization:**
+- Efficient project-task JOINs using indexed foreign keys
+- Proper use of LIMIT and OFFSET for pagination
+- Optimized search queries with text indexing
+
+## 🏛️ Backend Architecture
+
+### 📁 Backend Project Structure
 
 ```
 backend/
@@ -109,16 +319,16 @@ backend/
 └── tsconfig.json        # TypeScript configuration
 ```
 
-## 🔗 API Endpoints
+### 🔗 API Endpoints
 
-### Health Check
+#### Health Check
 
 ```
 GET  /                    # API status and version
 GET  /api                 # API information endpoint
 ```
 
-### Projects API
+#### Projects API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -128,7 +338,7 @@ GET  /api                 # API information endpoint
 | `PUT` | `/api/projects/:id` | Update existing project |
 | `DELETE` | `/api/projects/:id` | Delete project and all tasks |
 
-### Tasks API
+#### Tasks API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -137,6 +347,19 @@ GET  /api                 # API information endpoint
 | `PUT` | `/api/projects/:projectId/tasks/:taskId` | Update existing task |
 | `PATCH` | `/api/projects/:projectId/tasks/:taskId/complete` | Toggle task completion |
 | `DELETE` | `/api/projects/:projectId/tasks/:taskId` | Delete task from project |
+
+### 🎯 Backend Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with hot reload |
+| `npm run build` | Build for production |
+| `npm run start` | Run production build |
+| `npm run clean` | Clean build directory |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:migrate` | Run database migrations |
+| `npm run db:push` | Push schema changes to database |
+| `npm run db:studio` | Open Prisma Studio interface |
 
 ## 📝 API Examples
 
@@ -234,12 +457,21 @@ All API endpoints return consistent JSON responses:
 
 ## 🔒 Environment Variables
 
+### Backend Environment Variables
+
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | MySQL connection string | `mysql://user:pass@localhost:3306/db` |
 | `PORT` | Server port number | `5000` |
 | `NODE_ENV` | Environment mode | `development` or `production` |
 | `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:3000` |
+
+### Frontend Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `REACT_APP_API_URL` | Backend API base URL | `http://localhost:5000/api` |
+| `REACT_APP_ENV` | Environment mode | `development` or `production` |
 
 ## 🛠️ Development Guidelines
 
@@ -283,12 +515,18 @@ const project = await prisma.project.findUnique({
 
 ### Production Build
 
+#### Backend Build
 ```bash
-# Create production build
+cd backend
 npm run build
-
-# Start production server
 npm start
+```
+
+#### Frontend Build
+```bash
+cd frontend
+npm run build
+# Static files will be in build/ directory
 ```
 
 ### Docker Database Setup
@@ -355,14 +593,19 @@ npm install
 #### 2. Create frontend build
 
 ```bash
+cd frontend
+npm install
 npm run build
 ```
 
-This will generate the `build/` folder inside the project (assuming React or similar).
+This will generate the `build/` folder inside the frontend directory.
 
 #### 3. Install and run backend with PM2
 
 ```bash
+cd backend
+npm install
+npm run build
 npm install -g pm2
 pm2 start npm --name gp-backend -- start
 pm2 save
@@ -377,7 +620,7 @@ server {
     listen 80;
     server_name projectmanager.test;
 
-    root /var/www/gp/build;
+    root /var/www/gp/frontend/build;
     index index.html;
 
     location / {
@@ -385,7 +628,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://localhost:3000/;
+        proxy_pass http://localhost:5000/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -444,19 +687,53 @@ npx prisma migrate reset --force
 3. Ensure database exists and is accessible
 4. Run migrations: `npm run db:migrate`
 
-## 📊 Features
+### Frontend Issues
 
-- ✅ **Clean Architecture** with separation of concerns
-- ✅ **Type Safety** with comprehensive TypeScript interfaces
-- ✅ **Validation Chains** for data integrity
-- ✅ **Error Handling** with proper HTTP status codes
-- ✅ **CORS Configuration** for frontend integration
-- ✅ **Graceful Shutdown** for production reliability
-- ✅ **Health Checks** for monitoring
-- ✅ **Project-Task Relationships** with cascade deletion
-- ✅ **Search Functionality** across projects
-- ✅ **Task Priority System** based on due dates
-- ✅ **Overdue Task Detection** for project management
+**Build Errors:**
+```bash
+# Clear cache and reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**API Connection Issues:**
+1. Verify backend is running on correct port
+2. Check `REACT_APP_API_URL` in environment variables
+3. Verify CORS configuration in backend
+
+## 📊 System Features
+
+### ✅ Backend Features
+- **Clean Architecture** with separation of concerns
+- **Type Safety** with comprehensive TypeScript interfaces
+- **Validation Chains** for data integrity
+- **Error Handling** with proper HTTP status codes
+- **CORS Configuration** for frontend integration
+- **Graceful Shutdown** for production reliability
+- **Health Checks** for monitoring
+- **Project-Task Relationships** with cascade deletion
+- **Search Functionality** across projects
+- **Task Priority System** based on due dates
+- **Overdue Task Detection** for project management
+
+### ✅ Frontend Features
+- **Modern React** with hooks and functional components
+- **Redux State Management** with async thunks
+- **Responsive Design** with Tailwind CSS
+- **Modal Workflows** for better user experience
+- **Advanced Tables** with sorting, filtering, and pagination
+- **Form Validation** with real-time feedback
+- **Loading States** and error handling
+- **Optimistic Updates** for better performance
+- **Type-Safe API Integration** with TypeScript
+
+### ✅ Database Features
+- **Relational Structure** with proper foreign keys
+- **Cascade Operations** for data integrity
+- **Automatic Timestamps** for audit trails
+- **Unicode Support** for international content
+- **Indexed Queries** for optimal performance
+- **Transaction Support** for data consistency
 
 ## 🤝 Contributing
 
@@ -470,10 +747,9 @@ npx prisma migrate reset --force
 
 This project is licensed under the **MIT License** - see the LICENSE file for details.
 
-
-
 ---
 
-**API Version**: 1.0.0  
-**Node.js**: 18.20.8+  
-**TypeScript**: 5.4.2
+**System Version**: 1.0.0  
+**Frontend**: React 19.1.0 + TypeScript 5.4.2  
+**Backend**: Node.js 18.20.8+ + TypeScript 5.4.2  
+**Database**: MySQL 8.0+ with Prisma 5.12.0
