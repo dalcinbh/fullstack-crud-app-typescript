@@ -7,13 +7,30 @@ import { Project } from '../../interfaces/project.interface';
 import { TaskTable } from './TaskTable';
 import AddTaskModal from './AddTaskModal';
 
+/**
+ * Props interface for the TaskManagementModal component
+ */
 interface TaskManagementModalProps {
+  /** Controls whether the modal is visible or hidden */
   isOpen: boolean;
+  /** Callback function executed when the modal should be closed */
   onClose: () => void;
+  /** Project object containing information about the project whose tasks are being managed */
   project: Project;
+  /** Optional callback function executed when project data needs to be refreshed */
   onProjectsUpdate?: () => void;
 }
 
+/**
+ * Comprehensive task management modal for handling all task operations within a specific project.
+ * Provides a full-featured interface for viewing, creating, editing, and deleting tasks.
+ * Features task statistics display, responsive table with pagination, and integrated task creation modal.
+ * Automatically refreshes task and project data after any CRUD operations to maintain consistency.
+ * Includes loading states, empty state handling, and proper error management.
+ * 
+ * @param props - Configuration object containing modal state, project data, and callback functions
+ * @returns JSX modal element with comprehensive task management interface
+ */
 const TaskManagementModal: React.FC<TaskManagementModalProps> = ({ 
   isOpen, 
   onClose, 
@@ -25,7 +42,10 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
   
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
-  // Load tasks when modal opens
+  /**
+   * Effect hook that loads tasks and resets state when modal opens.
+   * Fetches all tasks for the current project and clears any previous Redux state.
+   */
   useEffect(() => {
     if (isOpen) {
       dispatch(getAllTasksAsync(project.id));
@@ -33,13 +53,17 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
     }
   }, [isOpen, project.id, dispatch]);
 
-  // Refresh tasks and projects after any successful operation
+  /**
+   * Effect hook that handles automatic data refresh after successful operations.
+   * Monitors task operation success states and triggers appropriate data refreshes.
+   * Ensures UI consistency by updating both task and project data after changes.
+   */
   useEffect(() => {
     if (insertSuccess || updateSuccess || deleteSuccess) {
-      // Refresh tasks
+      /** Refresh tasks */
       dispatch(getAllTasksAsync(project.id));
       
-      // Refresh projects
+      /** Refresh projects */
       dispatch(getAllProjectsAsync());
       if (onProjectsUpdate) {
         onProjectsUpdate();
@@ -48,35 +72,53 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
     }
   }, [insertSuccess, updateSuccess, deleteSuccess, project.id, dispatch, onProjectsUpdate]);
 
+  /**
+   * Opens the add task modal for creating new tasks.
+   * Uses useCallback to prevent unnecessary re-renders.
+   */
   const handleAddTask = useCallback(() => {
     setIsAddTaskModalOpen(true);
   }, []);
 
+  /**
+   * Closes the add task modal and resets modal state.
+   * Uses useCallback to maintain reference stability.
+   */
   const handleCloseAddTaskModal = useCallback(() => {
     setIsAddTaskModalOpen(false);
   }, []);
 
+  /**
+   * Handles successful task addition completion.
+   * Data refresh is automatically handled by the useEffect hook above.
+   * Uses useCallback for performance optimization.
+   */
   const handleTaskAdded = useCallback(() => {
-    // Refresh is handled by useEffect above
+    /** Refresh is handled by useEffect above */
   }, []);
 
+  /**
+   * Handles task updates and triggers necessary data refreshes.
+   * Refreshes both task list and project data to maintain consistency.
+   * Uses useCallback to prevent unnecessary re-renders.
+   */
   const handleTaskUpdate = useCallback(() => {
-    // Refresh tasks
+    /** Refresh tasks */
     dispatch(getAllTasksAsync(project.id));
     
-    // Refresh projects
+    /** Refresh projects */
     dispatch(getAllProjectsAsync());
     if (onProjectsUpdate) {
       onProjectsUpdate();
     }
   }, [dispatch, project.id, onProjectsUpdate]);
 
-  // Sort tasks by createdAt descending
+  /** Sort tasks by creation date in descending order for better user experience */
   const sortedTasks = [...tasks].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  // Calculate task statistics
+  /** Calculate task statistics for display in modal header */
   const completedTasks = tasks.filter(task => task.isCompleted).length;
   const totalTasks = tasks.length;
 

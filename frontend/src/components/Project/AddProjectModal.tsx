@@ -3,12 +3,27 @@ import useAppDispatch from '../../hooks/use-app.dispatch';
 import useAppSelector from '../../hooks/use-app.selector';
 import { insertProjectAsync, projectSelector, reset } from '../../slices/project.slice';
 
+/**
+ * Props interface for the AddProjectModal component
+ */
 interface AddProjectModalProps {
+  /** Controls whether the modal is visible or hidden */
   isOpen: boolean;
+  /** Callback function executed when the modal should be closed */
   onClose: () => void;
+  /** Callback function executed when a project is successfully created */
   onSuccess: () => void;
 }
 
+/**
+ * Modal component for creating new projects with form validation and Redux integration.
+ * Provides a form interface for entering project details including name, description, and start date.
+ * Handles form validation, error display, and communicates with Redux store for project creation.
+ * Automatically closes and resets form state upon successful project creation.
+ * 
+ * @param props - Configuration object containing modal state and callback functions
+ * @returns JSX modal element with form for project creation
+ */
 const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const dispatch = useAppDispatch();
   const { loading, insertSuccess, error, message } = useAppSelector(projectSelector);
@@ -25,7 +40,10 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
     startDate: '',
   });
 
-  // Reset form when modal opens
+  /**
+   * Effect hook that resets form state and clears Redux state when modal opens.
+   * Ensures clean slate for each new project creation attempt.
+   */
   useEffect(() => {
     if (isOpen) {
       setFormData({
@@ -42,7 +60,10 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
     }
   }, [isOpen, dispatch]);
 
-  // Handle success
+  /**
+   * Effect hook that handles successful project creation.
+   * Triggers success callback, closes modal, and resets Redux state.
+   */
   useEffect(() => {
     if (insertSuccess) {
       onSuccess();
@@ -51,6 +72,12 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
     }
   }, [insertSuccess, onSuccess, onClose, dispatch]);
 
+  /**
+   * Validates all form fields and sets appropriate error messages.
+   * Checks for required fields and ensures proper data format.
+   * 
+   * @returns Boolean indicating whether all validation rules pass
+   */
   const validateForm = () => {
     const newErrors = {
       name: '',
@@ -74,6 +101,12 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
     return Object.values(newErrors).every(error => error === '');
   };
 
+  /**
+   * Handles form submission by validating input and dispatching project creation action.
+   * Prevents default form submission behavior and only proceeds if validation passes.
+   * 
+   * @param e - React form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -84,7 +117,12 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
     dispatch(insertProjectAsync(formData));
   };
   
-
+  /**
+   * Handles input field changes and clears corresponding error messages.
+   * Updates form data state and provides real-time error clearing for better UX.
+   * 
+   * @param e - React change event from input or textarea elements
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -92,7 +130,7 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
       [name]: value,
     }));
     
-    // Clear error when user starts typing
+    /** Clear error when user starts typing to provide immediate feedback */
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({
         ...prev,

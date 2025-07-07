@@ -1,12 +1,35 @@
+/**
+ * Global stylesheet combining Tailwind CSS framework with custom component styles.
+ * Provides consistent design system foundation with utility classes and custom
+ * styling layers for tables, forms, buttons, and modals. Establishes typography,
+ * spacing, and interaction patterns used throughout the project management application.
+ */
+
+/**
+ * Development configuration comments for CSS processing tools.
+ * Disables Prettier formatting and TypeScript checking for Tailwind directives.
+ */
 /* prettier-ignore */
 /* CSS validation disabled for Tailwind */
 /* @ts-nocheck */
+
+/**
+ * Tailwind CSS framework integration providing utility-first styling approach.
+ * Imports base styles, component utilities, and helper classes for responsive design.
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
+/**
+ * Base layer customizations for fundamental HTML elements and typography.
+ * Establishes consistent font families, rendering optimizations, and background colors.
+ */
 @layer base {
+  /**
+   * Body element styling with system font stack for optimal cross-platform typography.
+   * Includes font smoothing for crisp text rendering and consistent background color.
+   */
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -16,42 +39,73 @@
     @apply bg-gray-50;
   }
 
+  /**
+   * Code element styling with monospace font family for consistent code display.
+   * Ensures proper spacing and readability for inline code snippets.
+   */
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
   }
 }
 
+/**
+ * Component layer providing reusable styling patterns for common UI elements.
+ * Includes table containers, modal backdrops, form elements, and interactive components.
+ */
 @layer components {
-  /* Table styles */
+  /**
+   * Table container styling with elevated appearance and proper overflow handling.
+   * Provides consistent background, border radius, and shadow for data tables.
+   */
   .table-container {
     @apply bg-white rounded-lg overflow-hidden shadow;
   }
 
-  /* Modal backdrop */
+  /**
+   * Modal backdrop overlay with semi-transparent background for focus management.
+   * Creates visual separation between modal content and underlying interface.
+   */
   .modal-backdrop {
     @apply bg-gray-600 bg-opacity-50;
   }
 
-  /* Table specific styling */
+  /**
+   * Table structure optimization preventing cell spacing and border conflicts.
+   * Ensures consistent border rendering across different browsers.
+   */
   table {
     @apply border-collapse;
   }
 
+  /**
+   * Table cell styling with consistent border treatment for visual separation.
+   * Provides subtle row dividers without overwhelming the content.
+   */
   th, td {
     @apply border-b border-gray-200;
   }
 
-  /* Form styles */
+  /**
+   * Form input styling with smooth color transitions for enhanced user experience.
+   * Provides visual feedback during state changes and interactions.
+   */
   input, textarea {
     @apply transition-colors duration-150 ease-in-out;
   }
 
+  /**
+   * Form input focus states with blue accent colors and ring effects.
+   * Provides clear visual indication of active form elements for accessibility.
+   */
   input:focus, textarea:focus {
     @apply border-blue-500 ring-2 ring-blue-200;
   }
 
-  /* Button styles */
+  /**
+   * Button interaction styling with comprehensive transition effects.
+   * Ensures smooth animations for all button state changes and hover effects.
+   */
   button {
     @apply transition-all duration-150 ease-in-out;
   }

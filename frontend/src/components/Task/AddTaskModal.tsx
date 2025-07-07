@@ -3,13 +3,29 @@ import useAppDispatch from '../../hooks/use-app.dispatch';
 import useAppSelector from '../../hooks/use-app.selector';
 import { insertTaskAsync, taskSelector, reset } from '../../slices/task.slice';
 
+/**
+ * Props interface for the AddTaskModal component
+ */
 interface AddTaskModalProps {
+  /** Controls whether the modal is visible or hidden */
   isOpen: boolean;
+  /** Callback function executed when the modal should be closed */
   onClose: () => void;
+  /** Callback function executed when a task is successfully created */
   onSuccess: () => void;
+  /** Unique identifier of the project to which the task will be added */
   projectId: number;
 }
 
+/**
+ * Modal component for creating new tasks within a specific project with form validation and Redux integration.
+ * Provides a form interface for entering task details including title, description, and due date.
+ * Handles form validation, error display, and communicates with Redux store for task creation.
+ * Automatically closes and resets form state upon successful task creation.
+ * 
+ * @param props - Configuration object containing modal state, project ID, and callback functions
+ * @returns JSX modal element with form for task creation
+ */
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess, projectId }) => {
   const dispatch = useAppDispatch();
   const { loading, insertSuccess, error, message } = useAppSelector(taskSelector);
@@ -26,7 +42,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
     dueDate: '',
   });
 
-  // Reset form when modal opens
+  /**
+   * Effect hook that resets form state and clears Redux state when modal opens.
+   * Ensures clean slate for each new task creation attempt.
+   */
   useEffect(() => {
     if (isOpen) {
       setFormData({
@@ -43,7 +62,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
     }
   }, [isOpen, dispatch]);
 
-  // Handle success
+  /**
+   * Effect hook that handles successful task creation.
+   * Triggers success callback, closes modal, and resets Redux state.
+   */
   useEffect(() => {
     if (insertSuccess) {
       onSuccess();
@@ -52,6 +74,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
     }
   }, [insertSuccess, onSuccess, onClose, dispatch]);
 
+  /**
+   * Validates all form fields and sets appropriate error messages.
+   * Checks for required fields and ensures proper data format.
+   * 
+   * @returns Boolean indicating whether all validation rules pass
+   */
   const validateForm = () => {
     const newErrors = {
       title: '',
@@ -75,6 +103,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
     return Object.values(newErrors).every(error => error === '');
   };
 
+  /**
+   * Handles form submission by validating input and dispatching task creation action.
+   * Converts date string to Date object and includes project ID for proper association.
+   * Prevents default form submission behavior and only proceeds if validation passes.
+   * 
+   * @param e - React form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -90,6 +125,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
     }));
   };
 
+  /**
+   * Handles input field changes and clears corresponding error messages.
+   * Updates form data state and provides real-time error clearing for better UX.
+   * 
+   * @param e - React change event from input or textarea elements
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -97,7 +138,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onSuccess,
       [name]: value,
     }));
     
-    // Clear error when user starts typing
+    /** Clear error when user starts typing to provide immediate feedback */
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({
         ...prev,

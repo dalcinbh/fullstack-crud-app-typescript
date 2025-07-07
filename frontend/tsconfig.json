@@ -1,25 +1,76 @@
 {
+  // TypeScript configuration for the React frontend application
+  // Optimized for Create React App with modern React features and browser compatibility
+  // Includes DOM types, React JSX transformation, and strict type checking
+  
   "compilerOptions": {
+    // Target ECMAScript version for browser compatibility
+    // ES5 ensures compatibility with older browsers while supporting modern features
     "target": "es5",
+    
+    // Library definitions for browser and JavaScript runtime features
+    // Enables type checking for DOM APIs and modern JavaScript features
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "dom",           // DOM API types for browser environment
+      "dom.iterable",  // Iterable DOM collections (NodeList, HTMLCollection)
+      "esnext"         // Latest ECMAScript features and proposals
     ],
+    
+    // Allows importing JavaScript files alongside TypeScript files
+    // Enables gradual migration from JavaScript to TypeScript
     "allowJs": true,
+    
+    // Skips type checking for declaration files to improve compilation speed
+    // Useful when using many third-party libraries with their own type definitions
     "skipLibCheck": true,
+    
+    // Enables seamless interoperability between CommonJS and ES modules
+    // Allows importing CommonJS modules with ES6 import syntax
     "esModuleInterop": true,
+    
+    // Allows default imports from modules without default exports
+    // Improves compatibility with CommonJS modules and libraries
     "allowSyntheticDefaultImports": true,
+    
+    // Enables all strict type checking options for better code quality
+    // Includes strict null checks, function types, and property initialization
     "strict": true,
+    
+    // Enforces consistent file naming across different operating systems
+    // Prevents case sensitivity issues between Windows, macOS, and Linux
     "forceConsistentCasingInFileNames": true,
+    
+    // Ensures all switch statement cases either break or have fallthrough comments
+    // Prevents common bugs from missing break statements
     "noFallthroughCasesInSwitch": true,
+    
+    // Module system for modern JavaScript with dynamic imports
+    // ESNext enables the latest module features and bundler compatibility
     "module": "esnext",
+    
+    // Module resolution strategy for Node.js-style imports
+    // Supports relative imports and node_modules resolution
     "moduleResolution": "node",
+    
+    // Enables importing JSON files as modules with type checking
+    // Useful for configuration files and static data imports
     "resolveJsonModule": true,
+    
+    // Ensures each file is treated as a separate module for better tree-shaking
+    // Required for proper bundling and optimization with webpack
     "isolatedModules": true,
+    
+    // Prevents TypeScript from emitting compiled JavaScript files
+    // Create React App handles compilation, so no output is needed
     "noEmit": true,
+    
+    // Configures JSX transformation for React 17+ automatic runtime
+    // Eliminates need for explicit React imports in JSX files
     "jsx": "react-jsx"
   },
+  
+  // Specifies which files to include in the compilation process
+  // Includes all TypeScript and JavaScript files in the src directory
   "include": [
     "src"
   ]

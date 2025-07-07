@@ -18,34 +18,75 @@ import { deleteTaskAsync, updateTaskStatusAsync } from '../../slices/task.slice'
 import { formatDateToBR } from '../../utils/dateFormat';
 import { usePaginationContext } from '../../contexts/PaginationContext';
 
+/**
+ * Props interface for the TaskTable component
+ */
 interface TaskTableProps {
+  /** Array of task objects to display in the table */
   data: Task[];
+  /** Unique identifier of the project that owns these tasks */
   projectId: number;
+  /** Optional callback function executed after task updates */
   onUpdate?: () => void;
 }
 
-// Custom filter function
+/**
+ * Custom fuzzy filter function for searching across task table data.
+ * Performs case-insensitive substring matching on task field values.
+ * 
+ * @param row - Table row object containing task data
+ * @param columnId - Identifier for the column being filtered
+ * @param value - Search term entered by user
+ * @param addMeta - Function to add metadata to the filter (unused)
+ * @returns Boolean indicating whether the row matches the search criteria
+ */
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   const itemRank = row.getValue(columnId);
   return itemRank ? itemRank.toString().toLowerCase().includes(value.toLowerCase()) : false;
 };
 
+/**
+ * Props interface for the TaskStatusCell component
+ */
 interface TaskStatusCellProps {
+  /** Task object containing status information */
   task: Task;
+  /** Unique identifier of the project that owns this task */
   projectId: number;
+  /** Optional callback function executed after status updates */
   onUpdate?: () => void;
 }
 
+/**
+ * Specialized cell component for handling task status changes with inline editing.
+ * Provides dropdown selection for task status with save functionality.
+ * Tracks local changes and only shows save button when modifications are pending.
+ * Integrates with Redux store for status updates and error handling.
+ * 
+ * @param props - Configuration object containing task data, project ID, and update callback
+ * @returns JSX element with status dropdown and conditional save button
+ */
 const TaskStatusCell: React.FC<TaskStatusCellProps> = ({ task, projectId, onUpdate }) => {
   const dispatch = useAppDispatch();
   const [status, setStatus] = React.useState(task.isCompleted);
   const [hasChanges, setHasChanges] = React.useState(false);
 
+  /**
+   * Handles status selection changes and tracks modification state.
+   * Updates local state and determines if save button should be displayed.
+   * 
+   * @param newStatus - Boolean indicating new completion status
+   */
   const handleStatusChange = (newStatus: boolean) => {
     setStatus(newStatus);
     setHasChanges(newStatus !== task.isCompleted);
   };
 
+  /**
+   * Saves status changes to the backend and updates related data.
+   * Dispatches Redux action to update task status and triggers refresh callback.
+   * Handles error cases with console logging for debugging.
+   */
   const handleSave = async () => {
     try {
       await dispatch(updateTaskStatusAsync({
@@ -85,17 +126,35 @@ const TaskStatusCell: React.FC<TaskStatusCellProps> = ({ task, projectId, onUpda
   );
 };
 
+/**
+ * Advanced task table component with comprehensive features for task management.
+ * Built on TanStack Table library with sorting, filtering, pagination, and inline editing capabilities.
+ * Features fixed height container with scrolling, sticky header, and responsive design.
+ * Integrates with pagination context to maintain state across component re-renders.
+ * Provides inline task status editing and deletion functionality with confirmation dialogs.
+ * 
+ * @param props - Configuration object containing task data, project ID, and update callback
+ * @returns JSX element containing fully-featured task table with controls
+ */
 export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
   const dispatch = useAppDispatch();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
   
-  // Read page size from environment variables
+  /** Read page size from environment variables with fallback to default value */
   const taskPageSize = Number(process.env.REACT_APP_TASK_LIST_SIZE_PAGE) || 5;
   
-  // Use pagination context
+  /** Use pagination context to maintain page state across table instances */
   const { taskPageIndex, setTaskPageIndex } = usePaginationContext();
 
+  /**
+   * Handles task deletion with user confirmation.
+   * Shows confirmation dialog before proceeding with deletion.
+   * Dispatches Redux action to delete task and triggers data refresh.
+   * Uses useCallback to prevent unnecessary re-renders.
+   * 
+   * @param task - Task object to be deleted
+   */
   const handleDeleteTask = useCallback((task: Task) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       dispatch(deleteTaskAsync({
@@ -108,6 +167,11 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
     }
   }, [dispatch, projectId, onUpdate]);
 
+  /**
+   * Memoized column definitions for the task table.
+   * Defines structure, formatting, and behavior for each table column including sorting and filtering.
+   * Uses React.useMemo to prevent re-creation on every render for better performance.
+   */
   const columns = React.useMemo<ColumnDef<Task>[]>(
     () => [
       {
@@ -193,6 +257,10 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
     [handleDeleteTask, projectId, onUpdate]
   );
 
+  /**
+   * Main table instance configuration with all features enabled.
+   * Handles state management, event handlers, and model generation for the table.
+   */
   const table = useReactTable({
     data,
     columns,
@@ -223,6 +291,7 @@ export function TaskTable({ data, projectId, onUpdate }: TaskTableProps) {
     autoResetPageIndex: false,
   });
 
+  /** Calculate pagination display values for user feedback */
   const totalPages = table.getPageCount();
   const currentPage = table.getState().pagination.pageIndex;
   const showPagination = totalPages > 1;

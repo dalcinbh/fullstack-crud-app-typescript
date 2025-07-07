@@ -1,41 +1,121 @@
 {
+  // TypeScript configuration for the Node.js backend application
+  // Optimized for Express.js server with Prisma ORM and ESM module support
+  // Includes decorator support, path mapping, and production build configuration
+  
   "compilerOptions": {
+    // Target ECMAScript version for Node.js runtime compatibility
+    // ES2022 provides modern features while maintaining Node.js LTS support
     "target": "ES2022",
+    
+    // Module system for modern JavaScript with ESM support
+    // ESNext enables the latest module features and dynamic imports
     "module": "ESNext",
+    
+    // Module resolution strategy for Node.js-style imports
+    // Supports relative imports and node_modules resolution
     "moduleResolution": "Node",
+    
+    // Allows default imports from modules without default exports
+    // Improves compatibility with CommonJS modules and libraries
     "allowSyntheticDefaultImports": true,
+    
+    // Enables seamless interoperability between CommonJS and ES modules
+    // Allows importing CommonJS modules with ES6 import syntax
     "esModuleInterop": true,
+    
+    // Disables importing TypeScript files with explicit .ts extensions
+    // Maintains compatibility with module bundlers and runtime environments
     "allowImportingTsExtensions": false,
+    
+    // Enables importing JSON files as modules with type checking
+    // Useful for configuration files and static data imports
     "resolveJsonModule": true,
+    
+    // Ensures each file is treated as a separate module for better tree-shaking
+    // Required for proper ESM module handling and optimization
     "isolatedModules": true,
+    
+    // Enables TypeScript compilation and JavaScript file generation
+    // Required for building the production server application
     "noEmit": false,
+    
+    // Generates TypeScript declaration files (.d.ts) for better IDE support
+    // Enables type checking for other parts of the application
     "declaration": true,
+    
+    // Output directory for compiled JavaScript files
+    // Separates source code from build artifacts
     "outDir": "./dist",
+    
+    // Root directory for source files to maintain folder structure
+    // Ensures proper path resolution in the output directory
     "rootDir": "./",
+    
+    // Enables all strict type checking options for better code quality
+    // Includes strict null checks, function types, and property initialization
     "strict": true,
+    
+    // Skips type checking for declaration files to improve compilation speed
+    // Useful for large projects with many third-party dependencies
     "skipLibCheck": true,
+    
+    // Enforces consistent file naming across different operating systems
+    // Prevents case sensitivity issues between Windows, macOS, and Linux
     "forceConsistentCasingInFileNames": true,
+    
+    // Enables experimental decorator support for frameworks like TypeORM
+    // Required for class-based decorators and metadata reflection
     "experimentalDecorators": true,
+    
+    // Enables decorator metadata emission for runtime reflection
+    // Required for dependency injection and ORM decorators
     "emitDecoratorMetadata": true,
+    
+    // Library definitions for Node.js and modern JavaScript features
+    // Provides type checking for Node.js APIs and ES2022 features
     "lib": ["ES2022"],
+    
+    // Type definitions for Node.js runtime environment
+    // Enables proper type checking for Node.js built-in modules
     "types": ["node"],
+    
+    // Base URL for module resolution and path mapping
+    // Enables absolute imports from the project root
     "baseUrl": "./",
+    
+    // Path mapping for cleaner import statements
+    // Allows using @/* as alias for project root imports
     "paths": {
       "@/*": ["./*"]
     }
   },
+  
+  // Specifies which files to include in the compilation process
+  // Includes all TypeScript and JavaScript files in the project
   "include": [
     "**/*.ts",
     "**/*.js"
   ],
+  
+  // Specifies which files to exclude from compilation
+  // Prevents processing of dependencies, builds, and test files
   "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+    "node_modules",    // Third-party dependencies
+    "dist",           // Compiled output directory
+    "**/*.test.ts",   // Unit test files
+    "**/*.spec.ts"    // Specification test files
   ],
+  
+  // ts-node configuration for development and script execution
+  // Enables running TypeScript files directly without compilation
   "ts-node": {
+    // Enables ECMAScript module support for ts-node
+    // Required for running ESM TypeScript files directly
     "esm": true,
+    
+    // Experimental module specifier resolution for better ESM compatibility
+    // Improves handling of relative imports and module resolution
     "experimentalSpecifierResolution": "node"
   }
 } 

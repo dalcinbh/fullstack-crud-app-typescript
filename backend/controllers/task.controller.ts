@@ -1,9 +1,57 @@
+/**
+ * Task Controller
+ * 
+ * Express route handlers for task-related API endpoints within the context of projects.
+ * This controller serves as the HTTP interface layer, handling request validation,
+ * calling appropriate business logic methods from the Task class, and formatting
+ * responses with proper HTTP status codes.
+ * 
+ * Follows the clean architecture pattern with comprehensive validation chains:
+ * - Request parameter validation and parsing
+ * - Multi-level validation (project exists, task exists, task belongs to project)
+ * - HTTP status code determination based on validation results
+ * - Response formatting with consistent JSON structure
+ * - Error handling and logging
+ * 
+ * All business logic is delegated to the Task class methods, maintaining separation
+ * of concerns. The controller handles complex validation scenarios including:
+ * - Project existence validation
+ * - Task existence validation  
+ * - Task-project relationship validation
+ * - Appropriate HTTP status codes for each validation failure
+ * 
+ * API Response Format:
+ * - Success: { success: true, data: any, message?: string }
+ * - Error: { success: false, message: string, error?: string }
+ * 
+ * Task operations follow RESTful patterns within project context:
+ * - GET /projects/:projectId/tasks - List project tasks
+ * - POST /projects/:projectId/tasks - Create task in project
+ * - PUT /projects/:projectId/tasks/:taskId - Update task
+ * - DELETE /projects/:projectId/tasks/:taskId - Delete task
+ */
+
 import { Request, Response } from 'express';
 import { Task } from '../interfaces/task.interface.js';
 import { Task as TaskClass } from '../classes/task.class.js';
 
 /**
- * Get all tasks for a specific project
+ * GET /projects/:projectId/tasks - Retrieves all tasks for a specific project
+ * 
+ * Returns all tasks belonging to a project ordered by creation date (newest first).
+ * Validates that the project exists before fetching tasks. This ensures users
+ * cannot access tasks for non-existent projects.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with tasks array or error message
+ * 
+ * Response Codes:
+ * - 200: Success with tasks array
+ * - 400: Invalid project ID format
+ * - 404: Project not found
+ * - 500: Internal server error
  */
 export const getAllTasks = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -42,7 +90,25 @@ export const getAllTasks = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
- * Create a new task for a specific project
+ * POST /projects/:projectId/tasks - Creates a new task for a specific project
+ * 
+ * Creates a task record associated with a project. Validates that required fields
+ * are provided (title, description, dueDate) and that the target project exists.
+ * Tasks are created with completion status defaulting to false.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {string} req.body.title - Task title (required)
+ * @param {string} req.body.description - Task description (required)
+ * @param {string} req.body.dueDate - Task due date as ISO string (required)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with created task or error message
+ * 
+ * Response Codes:
+ * - 201: Task created successfully
+ * - 400: Invalid project ID or missing required fields
+ * - 404: Project not found
+ * - 500: Internal server error
  */
 export const createTask = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -97,7 +163,28 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Update a task's status or other fields
+ * PUT /projects/:projectId/tasks/:taskId - Updates a task's fields
+ * 
+ * Updates task fields while preserving existing data for fields not provided.
+ * Performs comprehensive validation chain: project exists, task exists, and
+ * task belongs to the specified project. Only updates fields provided in request body.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {string} req.params.taskId - Task ID as string (validated as number)
+ * @param {string} [req.body.title] - New task title (optional)
+ * @param {string} [req.body.description] - New task description (optional)
+ * @param {string} [req.body.dueDate] - New due date as ISO string (optional)
+ * @param {boolean} [req.body.isCompleted] - New completion status (optional)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with updated task or error message
+ * 
+ * Response Codes:
+ * - 200: Task updated successfully
+ * - 400: Invalid project ID or task ID format
+ * - 403: Task does not belong to this project
+ * - 404: Project not found or task not found
+ * - 500: Internal server error
  */
 export const updateTask = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -172,7 +259,24 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Toggle task completion status
+ * PATCH /projects/:projectId/tasks/:taskId/toggle - Toggles task completion status
+ * 
+ * Switches task completion status from complete to incomplete or vice versa.
+ * Performs full validation chain before toggling status. This is a convenience
+ * endpoint for quick task status changes without sending full update payload.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {string} req.params.taskId - Task ID as string (validated as number)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with updated task or error message
+ * 
+ * Response Codes:
+ * - 200: Task completion toggled successfully
+ * - 400: Invalid project ID or task ID format
+ * - 403: Task does not belong to this project
+ * - 404: Project not found or task not found
+ * - 500: Internal server error
  */
 export const toggleTaskCompletion = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -239,7 +343,24 @@ export const toggleTaskCompletion = async (req: Request, res: Response): Promise
 };
 
 /**
- * Delete a task
+ * DELETE /projects/:projectId/tasks/:taskId - Deletes a task from a project
+ * 
+ * Removes a task from the database after comprehensive validation. Ensures
+ * project exists, task exists, and task belongs to the specified project
+ * before deletion. Provides detailed error messages for each validation failure.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {string} req.params.taskId - Task ID as string (validated as number)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with success message or error
+ * 
+ * Response Codes:
+ * - 200: Task deleted successfully
+ * - 400: Invalid project ID or task ID format
+ * - 403: Task does not belong to this project
+ * - 404: Project not found or task not found
+ * - 500: Internal server error
  */
 export const deleteTask = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -305,7 +426,22 @@ export const deleteTask = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Get a specific task by ID
+ * GET /tasks/:id - Retrieves a specific task by ID (simplified endpoint)
+ * 
+ * Simple task retrieval by ID without project context validation. Used for
+ * internal operations or when project context is not required. Returns
+ * basic error response format for consistency with other endpoints.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.id - Task ID as string (validated as number)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with task data or error message
+ * 
+ * Response Codes:
+ * - 200: Success with task data
+ * - 400: Invalid task ID format
+ * - 404: Task not found
+ * - 500: Internal server error
  */
 export const getTaskById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -332,7 +468,21 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
- * Get task statistics for a project
+ * GET /projects/:projectId/tasks/stats - Retrieves task statistics for a project
+ * 
+ * Returns aggregated task completion statistics for a specific project using
+ * database groupBy functionality. Provides counts of completed vs incomplete
+ * tasks for dashboard and reporting purposes.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} req.params.projectId - Project ID as string (validated as number)
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with task statistics or error message
+ * 
+ * Response Codes:
+ * - 200: Success with statistics data
+ * - 400: Invalid project ID format
+ * - 500: Internal server error
  */
 export const getProjectTaskStats = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -353,7 +503,21 @@ export const getProjectTaskStats = async (req: Request, res: Response): Promise<
 };
 
 /**
- * Get overdue tasks
+ * GET /tasks/overdue - Retrieves overdue tasks with optional project filtering
+ * 
+ * Returns tasks with due dates in the past, ordered by due date (most overdue first).
+ * Supports optional project filtering via query parameter. Useful for dashboard
+ * alerts and task management features.
+ * 
+ * @param {Request} req - Express request object
+ * @param {string} [req.query.projectId] - Optional project ID to filter results
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with overdue tasks array or error message
+ * 
+ * Response Codes:
+ * - 200: Success with overdue tasks array
+ * - 400: Invalid project ID format (when provided)
+ * - 500: Internal server error
  */
 export const getOverdueTasks = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -374,7 +538,21 @@ export const getOverdueTasks = async (req: Request, res: Response): Promise<void
 };
 
 /**
- * Mark multiple tasks as completed
+ * PATCH /tasks/bulk-complete - Marks multiple tasks as completed
+ * 
+ * Bulk operation to mark multiple tasks as completed in a single request.
+ * Accepts an array of task IDs and validates each ID format before processing.
+ * Returns the count of successfully updated tasks for confirmation.
+ * 
+ * @param {Request} req - Express request object
+ * @param {number[]} req.body.taskIds - Array of task IDs to mark as completed
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>} HTTP response with update count or error message
+ * 
+ * Response Codes:
+ * - 200: Success with count of updated tasks
+ * - 400: Invalid or missing task IDs array
+ * - 500: Internal server error
  */
 export const markTasksAsCompleted = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -404,6 +582,12 @@ export const markTasksAsCompleted = async (req: Request, res: Response): Promise
   }
 };
 
+/**
+ * Task Controller Export Object
+ * 
+ * Grouped export of all task controller functions for convenient importing
+ * and potential future middleware attachment or route organization.
+ */
 export const taskController = {
   getAllTasks,
   createTask,

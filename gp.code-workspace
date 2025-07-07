@@ -1,8 +1,24 @@
 {
+	// VS Code workspace configuration for the project management application
+	// Defines folder structure and shared settings for consistent development experience
+	// across team members and development environments
+	
 	"folders": [
 		{
+			// Root folder configuration including both frontend and backend directories
+			// Enables unified workspace view of the full-stack application structure
 			"path": "."
 		}
 	],
-	"settings": {}
+	
+	// Shared workspace settings that apply to all folders and override user preferences
+	// Ensures consistent code formatting, linting, and development tool behavior
+	"settings": {
+		// Add project-specific VS Code settings here for:
+		// - TypeScript/JavaScript formatting rules
+		// - Extension configurations (ESLint, Prettier, etc.)
+		// - File association mappings
+		// - Debug configurations
+		// - Task runner settings
+	}
 }

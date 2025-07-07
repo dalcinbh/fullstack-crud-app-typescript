@@ -4,13 +4,29 @@ import useAppSelector from '../../hooks/use-app.selector';
 import { updateProjectAsync, projectSelector, reset } from '../../slices/project.slice';
 import { Project } from '../../interfaces/project.interface';
 
+/**
+ * Props interface for the EditProjectModal component
+ */
 interface EditProjectModalProps {
+  /** Controls whether the modal is visible or hidden */
   isOpen: boolean;
+  /** Callback function executed when the modal should be closed */
   onClose: () => void;
+  /** Callback function executed when a project is successfully updated */
   onSuccess: () => void;
+  /** Project object containing current data to be edited */
   project: Project;
 }
 
+/**
+ * Modal component for editing existing projects with form validation and Redux integration.
+ * Pre-populates form fields with current project data and handles updates to project information.
+ * Manages form validation, error display, and communicates with Redux store for project updates.
+ * Automatically closes and resets form state upon successful project modification.
+ * 
+ * @param props - Configuration object containing modal state, project data, and callback functions
+ * @returns JSX modal element with pre-filled form for project editing
+ */
 const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, onSuccess, project }) => {
   const dispatch = useAppDispatch();
   const { loading, updateSuccess, error, message } = useAppSelector(projectSelector);
@@ -27,7 +43,11 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
     startDate: '',
   });
 
-  // Load project data when modal opens
+  /**
+   * Effect hook that loads project data into form fields when modal opens.
+   * Handles date conversion from various formats to ensure proper display in date input.
+   * Resets error state and clears Redux state for clean editing experience.
+   */
   useEffect(() => {
     if (isOpen && project) {
       const startDate = project.startDate instanceof Date 
@@ -48,7 +68,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
     }
   }, [isOpen, project, dispatch]);
 
-  // Handle success
+  /**
+   * Effect hook that handles successful project update.
+   * Triggers success callback, closes modal, and resets Redux state.
+   */
   useEffect(() => {
     if (updateSuccess) {
       onSuccess();
@@ -57,6 +80,12 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
     }
   }, [updateSuccess, onSuccess, onClose, dispatch]);
 
+  /**
+   * Validates all form fields and sets appropriate error messages.
+   * Ensures required fields are filled and data meets validation criteria.
+   * 
+   * @returns Boolean indicating whether all validation rules pass
+   */
   const validateForm = () => {
     const newErrors = {
       name: '',
@@ -80,6 +109,13 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
     return Object.values(newErrors).every(error => error === '');
   };
 
+  /**
+   * Handles form submission by validating input and dispatching project update action.
+   * Converts date string back to Date object and includes project ID for proper update.
+   * Prevents default form submission behavior and only proceeds if validation passes.
+   * 
+   * @param e - React form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -96,6 +132,12 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
     }));
   };
 
+  /**
+   * Handles input field changes and clears corresponding error messages.
+   * Updates form data state and provides real-time error clearing for better UX.
+   * 
+   * @param e - React change event from input or textarea elements
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -103,7 +145,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ isOpen, onClose, on
       [name]: value,
     }));
     
-    // Clear error when user starts typing
+    /** Clear error when user starts typing to provide immediate feedback */
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({
         ...prev,

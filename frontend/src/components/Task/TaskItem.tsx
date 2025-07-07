@@ -5,23 +5,52 @@ import { getAllProjectsAsync } from '../../slices/project.slice';
 import { Task } from '../../interfaces/task.interface';
 import { formatDateToBR } from '../../utils/dateFormat';
 
+/**
+ * Props interface for the TaskItem component
+ */
 interface TaskItemProps {
+  /** Task object containing all task data to display */
   task: Task;
+  /** Unique identifier of the project that owns this task */
   projectId: number;
+  /** Optional callback function executed after task updates */
   onUpdate?: () => void;
 }
 
+/**
+ * Individual task item component with inline editing capabilities and visual status indicators.
+ * Displays task information including title, description, due date, and completion status.
+ * Provides inline status editing with save functionality and task deletion capabilities.
+ * Features visual indicators for overdue tasks and completed tasks with appropriate styling.
+ * Integrates with Redux store for task operations and project data synchronization.
+ * 
+ * @param props - Configuration object containing task data, project ID, and update callback
+ * @returns JSX element representing a single task item with interactive controls
+ */
 const TaskItem: React.FC<TaskItemProps> = ({ task, projectId, onUpdate }) => {
   const dispatch = useAppDispatch();
   const [selectedStatus, setSelectedStatus] = useState(task.isCompleted ? 'completed' : 'pending');
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
+  /**
+   * Handles task status changes through dropdown selection.
+   * Updates local state and tracks whether changes need to be saved.
+   * Uses useCallback to prevent unnecessary re-renders and maintain performance.
+   * 
+   * @param event - React change event from status dropdown
+   */
   const handleStatusChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
     setHasPendingChanges(newStatus !== (task.isCompleted ? 'completed' : 'pending'));
   }, [task.isCompleted]);
 
+  /**
+   * Saves task status changes to the backend and updates related data.
+   * Dispatches Redux actions to update task status and refresh project data.
+   * Handles error cases and provides user feedback through console logging.
+   * Uses useCallback to maintain reference stability across renders.
+   */
   const handleSave = useCallback(async () => {
     try {
       const isCompleted = selectedStatus === 'completed';
@@ -31,7 +60,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectId, onUpdate }) => {
         isCompleted: isCompleted
       }));
       
-      // Reload tasks and projects after successful update
+      /** Reload tasks and projects after successful update */
       if (onUpdate) {
         onUpdate();
       }
@@ -43,6 +72,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectId, onUpdate }) => {
     }
   }, [dispatch, task.id, projectId, selectedStatus, onUpdate]);
 
+  /**
+   * Handles task deletion with user confirmation.
+   * Shows confirmation dialog before proceeding with deletion.
+   * Dispatches Redux action to delete task and triggers data refresh.
+   * Uses useCallback to prevent unnecessary re-renders.
+   */
   const handleDelete = useCallback(() => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       dispatch(deleteTaskAsync({
@@ -55,6 +90,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectId, onUpdate }) => {
     }
   }, [dispatch, task.id, projectId, onUpdate]);
 
+  /** Calculate task status indicators based on completion and due date */
   const isCompleted = selectedStatus === 'completed';
   const isOverdue = new Date(task.dueDate) < new Date() && !isCompleted;
 
@@ -97,7 +133,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectId, onUpdate }) => {
 
             {/* Actions */}
             <div className="flex items-center space-x-2 ml-4">
-              {/* Save Button - Only show when there are pending changes */}
+              {/** Save Button - Only show when there are pending changes */}
               {hasPendingChanges && (
                 <button
                   onClick={handleSave}

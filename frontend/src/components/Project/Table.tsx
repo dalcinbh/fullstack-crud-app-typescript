@@ -14,25 +14,53 @@ import {
 } from '@tanstack/react-table';
 import { usePaginationContext } from '../../contexts/PaginationContext';
 
+/**
+ * Generic props interface for the Table component
+ */
 interface TableProps<T> {
+  /** Array of data objects to display in the table */
   data: T[];
+  /** Column definitions that specify structure and behavior of table columns */
   columns: ColumnDef<T>[];
+  /** Number of rows to display per page with default value */
   pageSize?: number;
 }
 
-// Custom filter function
+/**
+ * Custom fuzzy filter function for searching across table data.
+ * Performs case-insensitive substring matching on table cell values.
+ * 
+ * @param row - Table row object containing cell data
+ * @param columnId - Identifier for the column being filtered
+ * @param value - Search term entered by user
+ * @param addMeta - Function to add metadata to the filter (unused)
+ * @returns Boolean indicating whether the row matches the search criteria
+ */
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   const itemRank = row.getValue(columnId);
   return itemRank ? itemRank.toString().toLowerCase().includes(value.toLowerCase()) : false;
 };
 
+/**
+ * Reusable table component with advanced features including sorting, filtering, and pagination.
+ * Built on TanStack Table library with custom styling and responsive design.
+ * Integrates with pagination context to maintain state across component re-renders.
+ * Features global search, column sorting, and pagination controls with accessibility support.
+ * 
+ * @param props - Configuration object containing data, columns, and page size
+ * @returns JSX element containing fully-featured data table with controls
+ */
 export function Table<T>({ data, columns, pageSize = 10 }: TableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
   
-  // Use pagination context
+  /** Use pagination context to maintain page state across table instances */
   const { projectPageIndex, setProjectPageIndex } = usePaginationContext();
 
+  /**
+   * Main table instance configuration with all features enabled.
+   * Handles state management, event handlers, and model generation for the table.
+   */
   const table = useReactTable({
     data,
     columns,
@@ -63,6 +91,7 @@ export function Table<T>({ data, columns, pageSize = 10 }: TableProps<T>) {
     autoResetPageIndex: false,
   });
 
+  /** Calculate pagination display values for user feedback */
   const totalPages = table.getPageCount();
   const currentPage = table.getState().pagination.pageIndex;
   const showPagination = totalPages > 1;

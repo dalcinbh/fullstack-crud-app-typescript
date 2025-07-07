@@ -1,4 +1,11 @@
-// src/components/Project/ProjectList.tsx
+/**
+ * Main project management component that displays a comprehensive list of projects with CRUD operations.
+ * Integrates with Redux store to manage project data and provides interfaces for adding, editing, and managing tasks.
+ * Features sortable table with pagination, search functionality, and modal-based interactions.
+ * Automatically refreshes data after operations and maintains responsive design with loading states.
+ * 
+ * @returns JSX element containing project list table with action buttons and modal interfaces
+ */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import useAppDispatch from '../../hooks/use-app.dispatch';
@@ -22,56 +29,98 @@ const ProjectList = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedProjectForTasks, setSelectedProjectForTasks] = useState<Project | null>(null);
 
-  // Read page size from environment variables
+  /** Read page size from environment variables with fallback to default value */
   const projectPageSize = Number(process.env.REACT_APP_PROJECT_LIST_SIZE_PAGE) || 5;
 
+  /**
+   * Effect hook that loads all projects from the API on component mount.
+   * Ensures fresh data is available when the component initializes.
+   */
   useEffect(() => {
     dispatch(getAllProjectsAsync());
   }, [dispatch]);
 
+  /**
+   * Opens the add project modal and resets any existing modal state.
+   */
   const handleAddProject = () => {
     setIsModalOpen(true);
   };
 
+  /**
+   * Closes the add project modal and clears modal state.
+   */
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
+  /**
+   * Handles successful project addition by refreshing the projects list.
+   * Ensures the UI reflects the newly created project immediately.
+   */
   const handleProjectAdded = () => {
-    // Refresh the projects list after adding a new project
     dispatch(getAllProjectsAsync());
   };
 
+  /**
+   * Initiates project editing by setting the selected project and opening the edit modal.
+   * Uses useCallback to prevent unnecessary re-renders of child components.
+   * 
+   * @param project - Project object to be edited
+   */
   const handleEditProject = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsEditModalOpen(true);
   }, []);
 
+  /**
+   * Closes the edit project modal and clears selected project state.
+   */
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedProject(null);
   };
 
+  /**
+   * Handles successful project update by refreshing the projects list.
+   * Uses useCallback to maintain reference stability across renders.
+   */
   const handleProjectUpdated = useCallback(() => {
-    // Refresh the projects list after updating a project
     dispatch(getAllProjectsAsync());
   }, [dispatch]);
 
+  /**
+   * Initiates task management for a specific project by opening the task modal.
+   * Uses useCallback to prevent unnecessary re-renders of child components.
+   * 
+   * @param project - Project object whose tasks will be managed
+   */
   const handleManageTasks = useCallback((project: Project) => {
     setSelectedProjectForTasks(project);
     setIsTaskModalOpen(true);
   }, []);
 
+  /**
+   * Closes the task management modal and clears selected project state.
+   */
   const handleCloseTaskModal = () => {
     setIsTaskModalOpen(false);
     setSelectedProjectForTasks(null);
   };
 
+  /**
+   * Handles project list updates after task operations.
+   * Ensures the project list reflects any changes made through task management.
+   */
   const handleProjectsUpdate = useCallback(() => {
-    // Refresh the projects list after task operations
     dispatch(getAllProjectsAsync());
   }, [dispatch]);
 
+  /**
+   * Memoized column definitions for the project table.
+   * Defines structure, formatting, and behavior for each table column including sorting and filtering.
+   * Uses useMemo to prevent re-creation on every render for better performance.
+   */
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
       {
@@ -172,6 +221,7 @@ const ProjectList = () => {
           let status = 'Not Started';
           let statusClass = 'bg-gray-100 text-gray-800';
           
+          /** Determine project status based on task completion ratio */
           if (totalTasks === 0) {
             status = 'No Tasks';
             statusClass = 'bg-gray-100 text-gray-800';
@@ -250,6 +300,7 @@ const ProjectList = () => {
     [handleEditProject, handleManageTasks],
   );
 
+  /** Memoized project data array to prevent unnecessary re-renders */
   const data: Project[] = projects || [];
 
   return (
