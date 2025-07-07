@@ -10,6 +10,7 @@ import { Project } from '../../interfaces/project.interface';
 import { Table } from './Table';
 import AddProjectModal from './AddProjectModal';
 import EditProjectModal from './EditProjectModal';
+import TaskManagementModal from '../Task/TaskManagementModal';
 
 const ProjectList = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +18,8 @@ const ProjectList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [selectedProjectForTasks, setSelectedProjectForTasks] = useState<Project | null>(null);
 
   useEffect(() => {
     dispatch(getAllProjectsAsync());
@@ -48,6 +51,16 @@ const ProjectList = () => {
   const handleProjectUpdated = () => {
     // Refresh the projects list after updating a project
     dispatch(getAllProjectsAsync());
+  };
+
+  const handleManageTasks = useCallback((project: Project) => {
+    setSelectedProjectForTasks(project);
+    setIsTaskModalOpen(true);
+  }, []);
+
+  const handleCloseTaskModal = () => {
+    setIsTaskModalOpen(false);
+    setSelectedProjectForTasks(null);
   };
 
   const columns = useMemo<ColumnDef<Project>[]>(
@@ -179,7 +192,26 @@ const ProjectList = () => {
         cell: (info) => {
           const project = info.row.original;
           return (
-            <div className="flex justify-center">
+            <div className="flex justify-center space-x-1">
+              <button
+                onClick={() => handleManageTasks(project)}
+                className="text-green-600 hover:text-green-800 p-1 rounded-md hover:bg-green-50 transition-colors"
+                title="Manage tasks"
+              >
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" 
+                  />
+                </svg>
+              </button>
               <button
                 onClick={() => handleEditProject(project)}
                 className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors"
@@ -206,7 +238,7 @@ const ProjectList = () => {
         enableColumnFilter: false,
       },
     ],
-    [handleEditProject],
+    [handleEditProject, handleManageTasks],
   );
 
   const data: Project[] = projects || [];
@@ -261,6 +293,15 @@ const ProjectList = () => {
           onClose={handleCloseEditModal}
           onSuccess={handleProjectUpdated}
           project={selectedProject}
+        />
+      )}
+
+      {selectedProjectForTasks && (
+        <TaskManagementModal
+          isOpen={isTaskModalOpen}
+          onClose={handleCloseTaskModal}
+          project={selectedProjectForTasks}
+          onProjectsUpdate={() => dispatch(getAllProjectsAsync())}
         />
       )}
     </div>

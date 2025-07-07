@@ -16,9 +16,9 @@ const insertTask = async (
 ): Promise<Task> => {
   const config = requestConfig('POST', data);
   try {
-    const res = await fetch(`${api}/tasks`, config);
-    const task = await handleResponse(res);
-    return task as Task;
+    const res = await fetch(`${api}/projects/${data.projectId}/tasks`, config);
+    const response = await handleResponse(res);
+    return response.data as Task;
   } catch (error: any) {
     throw error;
   }
@@ -27,13 +27,30 @@ const insertTask = async (
 // Update Task
 const updateTask = async (
   id: string,
-  data: UpdateTaskRequest
+  data: UpdateTaskRequest,
+  projectId: number
 ): Promise<Task> => {
-  const config = requestConfig('PUT', data);
+  const config = requestConfig('PATCH', data);
   try {
-    const res = await fetch(`${api}/tasks/${id}`, config);
-    const updatedTask = await handleResponse(res);
-    return updatedTask as Task;
+    const res = await fetch(`${api}/projects/${projectId}/tasks/${id}`, config);
+    const response = await handleResponse(res);
+    return response.data as Task;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// Update Task Status
+const updateTaskStatus = async (
+  id: string,
+  projectId: number,
+  isCompleted: boolean
+): Promise<Task> => {
+  const config = requestConfig('PATCH', { isCompleted });
+  try {
+    const res = await fetch(`${api}/projects/${projectId}/tasks/${id}`, config);
+    const response = await handleResponse(res);
+    return response.data as Task;
   } catch (error: any) {
     throw error;
   }
@@ -42,10 +59,11 @@ const updateTask = async (
 // Delete Task
 const deleteTask = async (
   id: string,
+  projectId: number
 ): Promise<{ message: string }> => {
   const config = requestConfig('DELETE', null);
   try {
-    const res = await fetch(`${api}/tasks/${id}`, config);
+    const res = await fetch(`${api}/projects/${projectId}/tasks/${id}`, config);
     const response = await handleResponse(res);
     return { message: response.message };
   } catch (error: any) {
@@ -54,13 +72,12 @@ const deleteTask = async (
 };
 
 // Get All Tasks
-const getAllTasks = async (projectId?: number): Promise<Task[]> => {
+const getAllTasks = async (projectId: number): Promise<Task[]> => {
   const config = requestConfig('GET', null);
-  const url = projectId ? `${api}/tasks?projectId=${projectId}` : `${api}/tasks`;
   try {
-    const res = await fetch(url, config);
-    const tasks = await handleResponse(res);
-    return tasks as Task[];
+    const res = await fetch(`${api}/projects/${projectId}/tasks`, config);
+    const response = await handleResponse(res);
+    return response.data as Task[];
   } catch (error: any) {
     throw error;
   }
@@ -83,13 +100,13 @@ const getTaskById = async (
 // Toggle Task Completion
 const toggleTaskCompletion = async (
   id: string,
-  isCompleted: boolean
+  projectId: number
 ): Promise<Task> => {
-  const config = requestConfig('PUT', { isCompleted });
+  const config = requestConfig('PATCH', {});
   try {
-    const res = await fetch(`${api}/tasks/${id}/toggle`, config);
-    const updatedTask = await handleResponse(res);
-    return updatedTask as Task;
+    const res = await fetch(`${api}/projects/${projectId}/tasks/${id}/complete`, config);
+    const response = await handleResponse(res);
+    return response.data as Task;
   } catch (error: any) {
     throw error;
   }
@@ -98,6 +115,7 @@ const toggleTaskCompletion = async (
 const TaskService = {
   insertTask,
   updateTask,
+  updateTaskStatus,
   deleteTask,
   getAllTasks,
   getTaskById,

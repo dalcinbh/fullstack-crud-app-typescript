@@ -1,10 +1,12 @@
 import express from 'express';
 import projectRoutes from './project.routes.js';
+import taskRoutes from './task.routes.js';
 
 const router = express.Router();
 
 // Mount routes
 router.use('/projects', projectRoutes);
+router.use('/projects/:projectId/tasks', taskRoutes);
 
 // Health check route
 router.get('/', (req, res) => {

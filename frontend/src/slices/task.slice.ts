@@ -32,9 +32,9 @@ export const insertTaskAsync = createAsyncThunk(
 // Update Task
 export const updateTaskAsync = createAsyncThunk(
   'tasks/updateTask',
-  async ({ id, data }: { id: string; data: UpdateTaskRequest }, thunkAPI) => {
+  async ({ id, data, projectId }: { id: string; data: UpdateTaskRequest; projectId: number }, thunkAPI) => {
     try {
-      const updatedTask = await TaskService.updateTask(id, data);
+      const updatedTask = await TaskService.updateTask(id, data, projectId);
       return updatedTask; // Returns the updated task
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
@@ -45,9 +45,9 @@ export const updateTaskAsync = createAsyncThunk(
 // Delete Task
 export const deleteTaskAsync = createAsyncThunk(
   'tasks/deleteTask',
-  async (id: string, thunkAPI) => {
+  async ({ id, projectId }: { id: string; projectId: number }, thunkAPI) => {
     try {
-      const response = await TaskService.deleteTask(id);
+      const response = await TaskService.deleteTask(id, projectId);
       return { id, message: response.message };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
@@ -58,7 +58,7 @@ export const deleteTaskAsync = createAsyncThunk(
 // Get All Tasks
 export const getAllTasksAsync = createAsyncThunk(
   'tasks/getAllTasks',
-  async (projectId: number | undefined, thunkAPI) => {
+  async (projectId: number, thunkAPI) => {
     try {
       const tasks = await TaskService.getAllTasks(projectId);
       return tasks; // Returns the list of tasks
@@ -84,9 +84,22 @@ export const getTaskByIdAsync = createAsyncThunk(
 // Toggle Task Completion
 export const toggleTaskCompletionAsync = createAsyncThunk(
   'tasks/toggleTaskCompletion',
-  async ({ id, isCompleted }: { id: string; isCompleted: boolean }, thunkAPI) => {
+  async ({ id, projectId }: { id: string; projectId: number }, thunkAPI) => {
     try {
-      const updatedTask = await TaskService.toggleTaskCompletion(id, isCompleted);
+      const updatedTask = await TaskService.toggleTaskCompletion(id, projectId);
+      return updatedTask; // Returns the updated task
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+// Update Task Status
+export const updateTaskStatusAsync = createAsyncThunk(
+  'tasks/updateTaskStatus',
+  async ({ id, projectId, isCompleted }: { id: string; projectId: number; isCompleted: boolean }, thunkAPI) => {
+    try {
+      const updatedTask = await TaskService.updateTaskStatus(id, projectId, isCompleted);
       return updatedTask; // Returns the updated task
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
@@ -264,6 +277,35 @@ const TaskSlice = createSlice({
           state.loading = false;
           state.error = true;
           state.message = action.payload || 'Error toggling task completion.';
+        },
+      );
+
+    // Update Task Status
+    builder
+      .addCase(updateTaskStatusAsync.pending, (state) => {
+        state.loading = true;
+        state.error = false;
+        state.message = '';
+      })
+      .addCase(
+        updateTaskStatusAsync.fulfilled,
+        (state, action: PayloadAction<Task>) => {
+          state.loading = false;
+          state.updateSuccess = true;
+          const index = state.tasks.findIndex(
+            (t) => t.id === action.payload.id,
+          );
+          if (index !== -1) {
+            state.tasks[index] = action.payload;
+          }
+        },
+      )
+      .addCase(
+        updateTaskStatusAsync.rejected,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          state.error = true;
+          state.message = action.payload || 'Error updating task status.';
         },
       );
   },
