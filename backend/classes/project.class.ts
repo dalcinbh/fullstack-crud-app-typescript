@@ -155,6 +155,107 @@ export class Project {
   }
 
   /**
+   * Get projects with task counts
+   */
+  static async getProjectsWithTaskCounts(): Promise<(ProjectInterface & {
+    taskStats: {
+      totalTasks: number;
+      completedTasks: number;
+      pendingTasks: number;
+      completionPercentage: number;
+    }
+  })[]> {
+    try {
+      const projects = await prisma.project.findMany({
+        include: {
+          tasks: true
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return projects.map(project => {
+        const totalTasks = project.tasks?.length || 0;
+        const completedTasks = project.tasks?.filter(task => task.isCompleted).length || 0;
+        const pendingTasks = totalTasks - completedTasks;
+        const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+        return {
+          ...project,
+          taskStats: {
+            totalTasks,
+            completedTasks,
+            pendingTasks,
+            completionPercentage: Math.round(completionPercentage)
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Error getting projects with task counts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get projects by status
+   */
+  static async getProjectsByStatus(status: 'completed' | 'in_progress' | 'not_started'): Promise<ProjectInterface[]> {
+    try {
+      const projects = await prisma.project.findMany({
+        include: {
+          tasks: true
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return projects.filter(project => {
+        const totalTasks = project.tasks?.length || 0;
+        const completedTasks = project.tasks?.filter(task => task.isCompleted).length || 0;
+
+        switch (status) {
+          case 'completed':
+            return totalTasks > 0 && completedTasks === totalTasks;
+          case 'in_progress':
+            return totalTasks > 0 && completedTasks > 0 && completedTasks < totalTasks;
+          case 'not_started':
+            return totalTasks === 0 || completedTasks === 0;
+          default:
+            return false;
+        }
+      });
+    } catch (error) {
+      console.error('Error getting projects by status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search projects by name or description
+   */
+  static async searchProjects(searchTerm: string): Promise<ProjectInterface[]> {
+    try {
+      const projects = await prisma.project.findMany({
+        where: {
+          OR: [
+            { name: { contains: searchTerm } },
+            { description: { contains: searchTerm } }
+          ]
+        },
+        include: {
+          tasks: {
+            orderBy: { createdAt: 'desc' }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return projects;
+    } catch (error) {
+      console.error('Error searching projects:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get project data
    */
   get projectData(): ProjectInterface {
@@ -169,41 +270,56 @@ export class Project {
   }
 
   /**
-   * Get project tasks
+   * Get project duration in days
    */
-  getTasks(): Task[] {
-    return this.data.tasks || [];
+  getProjectDuration(): number {
+    const startDate = new Date(this.data.startDate);
+    const now = new Date();
+    const diffTime = now.getTime() - startDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
   }
 
   /**
-   * Add a task to the project
+   * Check if project is recently created (within last 7 days)
    */
-  addTask(task: Task): void {
-    if (!this.data.tasks) {
-      this.data.tasks = [];
+  isRecentlyCreated(): boolean {
+    const createdAt = new Date(this.data.createdAt);
+    const now = new Date();
+    const diffTime = now.getTime() - createdAt.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
+  }
+
+  /**
+   * Get project status based on tasks
+   */
+  getProjectStatus(): 'completed' | 'in_progress' | 'not_started' {
+    const tasks = this.data.tasks || [];
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.isCompleted).length;
+
+    if (totalTasks === 0 || completedTasks === 0) {
+      return 'not_started';
+    } else if (completedTasks === totalTasks) {
+      return 'completed';
+    } else {
+      return 'in_progress';
     }
-    this.data.tasks.push(task);
   }
 
   /**
-   * Remove a task from the project
+   * Get basic project statistics
    */
-  removeTask(taskId: number): void {
-    if (this.data.tasks) {
-      this.data.tasks = this.data.tasks.filter(task => task.id !== taskId);
-    }
-  }
-
-  /**
-   * Get project statistics
-   */
-  getStats(): {
+  getBasicStats(): {
     totalTasks: number;
     completedTasks: number;
     pendingTasks: number;
     completionPercentage: number;
+    projectDuration: number;
+    status: string;
   } {
-    const tasks = this.getTasks();
+    const tasks = this.data.tasks || [];
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(task => task.isCompleted).length;
     const pendingTasks = totalTasks - completedTasks;
@@ -213,7 +329,9 @@ export class Project {
       totalTasks,
       completedTasks,
       pendingTasks,
-      completionPercentage: Math.round(completionPercentage)
+      completionPercentage: Math.round(completionPercentage),
+      projectDuration: this.getProjectDuration(),
+      status: this.getProjectStatus()
     };
   }
 }
