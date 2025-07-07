@@ -2,6 +2,81 @@
 
 A modern, full-stack project management application built with **React TypeScript frontend** and **Node.js backend API**. This system provides comprehensive project and task management capabilities with a clean, responsive interface and robust backend architecture.
 
+## 🖥️ Setting Up the Local Environment (Step by Step)
+
+Before running the system locally, make sure you follow these steps carefully. This section summarizes everything a developer needs to get the app running from scratch.
+
+---
+
+### 1. Install Global Tools
+
+You must have the following installed on your machine:
+
+| Tool | Recommended Version | Link |
+|------|----------------------|------|
+| **Node.js** | v18.20.8 or higher | https://nodejs.org/ |
+| **npm** | v9+ (comes with Node.js) | — |
+| **MySQL** | v8.0+ (if not using Docker) | https://dev.mysql.com/downloads/ |
+| **Docker + Docker Compose** | Latest stable version | https://www.docker.com/products/docker-desktop |
+| **Git** | Any version | https://git-scm.com/ |
+
+💡 **Tip:** If you prefer using Docker for the database, you **do not need to install MySQL manually**. See section: [Docker Database Setup](#docker-database-setup)
+
+---
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/dalcinbh/test_project.git
+cd your-repository
+```
+
+### 3. Start the MySQL Database
+
+If you're using Docker, navigate to the MySQL docker folder and run:
+
+```bash
+cd docker/mysql
+docker compose up -d
+```
+
+📌 This will start:
+- **MySQL** at `localhost:3306`
+- **phpMyAdmin** at `http://localhost:8081`
+
+Make sure your `.env` file inside `backend/` points to:
+
+```ini
+DATABASE_URL="mysql://user:password@localhost:3306/projects"
+```
+
+### 4. Start the Backend Server
+
+```bash
+cd backend
+cp .env.example .env        # Then edit DB credentials if needed
+npm install
+npm run db:generate         # Generate Prisma client
+npm run db:migrate          # Create tables in the DB
+npm run dev                 # Start the backend server (http://localhost:5000)
+```
+
+### 5. Start the Frontend App
+
+```bash
+cd frontend
+cp .env.development.example.local .env.development.local   # Then set the API URL
+npm install
+npm start                      # Starts at http://localhost:3000
+```
+
+📣 **If any step fails, refer to the full documentation already included in the README under:**
+- [🔧 Quick Start (Full System)](#-quick-start-full-system)
+- [🛠️ Development Guidelines](#️-development-guidelines)
+- [🐛 Troubleshooting](#-troubleshooting)
+
+**This section is just a shortcut. Full details are explained below.**
+
 ## 🏗️ System Overview
 
 This application is a complete project management solution featuring:
