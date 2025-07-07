@@ -1,6 +1,6 @@
 // src/services/project.service.ts
 import { api, requestConfig } from '../config/config';
-import { Project } from '../interfaces/project.interface';
+import { Project, ProjectResponse } from '../interfaces/project.interface';
 
 const handleResponse = async (res: Response) => {
   const result = await res.json();
@@ -55,12 +55,12 @@ const deleteProject = async (
 };
 
 // Get All Projects
-const getAllProjects = async (): Promise<Project[]> => {
+const getAllProjects = async (): Promise<ProjectResponse> => {
   const config = requestConfig('GET', null);
   try {
     const res = await fetch(`${api}/projects`, config);
     const projects = await handleResponse(res);
-    return projects as Project[];
+    return projects as ProjectResponse;
   } catch (error: any) {
     throw error;
   }

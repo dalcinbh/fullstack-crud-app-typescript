@@ -105,7 +105,6 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 export const insertProject = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, startDate, tasks } = req.body;
-    
     // Validation
     if (!name || !description || !startDate) {
       res.status(400).json({

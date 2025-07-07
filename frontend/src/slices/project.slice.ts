@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import ProjectService from '../services/project.service';
 import { RootState } from '../store';
-import { Project, ProjectStates } from '../interfaces/project.interface';
+import { Project, ProjectResponse, ProjectStates } from '../interfaces/project.interface';
 
 // Initial state
 const initialState: ProjectStates = {
@@ -14,7 +14,14 @@ const initialState: ProjectStates = {
   deleteSuccess: false,
   error: false,
   message: '',
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 1,
+  },
 };
+
 
 // Insert Project
 export const insertProjectAsync = createAsyncThunk(
@@ -63,16 +70,20 @@ export const deleteProjectAsync = createAsyncThunk(
 );
 
 // Get All Projects
-export const getAllProjectsAsync = createAsyncThunk(
+export const getAllProjectsAsync = createAsyncThunk<
+  ProjectResponse, // <- tipo do retorno em caso de sucesso
+  void,            // <- tipo do argumento recebido (nenhum, pois é "_")
+  { rejectValue: string } // <- tipo em caso de erro
+>(
   'projects/getAllProjects',
   async (_, thunkAPI) => {
     try {
-      const projects = await ProjectService.getAllProjects();
-      return projects; // Returns the list of projects with bounds
+      const response = await ProjectService.getAllProjects();
+      return response;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 // Get Project by ID
@@ -117,7 +128,11 @@ const ProjectSlice = createSlice({
         (state, action: PayloadAction<Project>) => {
           state.loading = false;
           state.insertSuccess = true;
-          state.projects.unshift(action.payload);
+          if (Array.isArray(state.projects)) {
+            state.projects = [...state.projects, action.payload];
+          } else {
+            state.projects = [action.payload];
+          }          
         },
       )
       .addCase(
@@ -196,11 +211,17 @@ const ProjectSlice = createSlice({
       })
       .addCase(
         getAllProjectsAsync.fulfilled,
-        (state, action: PayloadAction<Project[]>) => {
+        (state, action: PayloadAction<ProjectResponse>) => {
           state.loading = false;
-          state.projects = action.payload;
+          state.projects = action.payload.data;
+          state.pagination = action.payload.pagination ?? {
+            page: 1,
+            limit: 10,
+            total: action.payload.data.length,
+            pages: 1,
+          };
         },
-      )
+      )      
       .addCase(
         getAllProjectsAsync.rejected,
         (state, action: PayloadAction<any>) => {

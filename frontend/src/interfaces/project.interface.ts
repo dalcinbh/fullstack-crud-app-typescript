@@ -22,7 +22,14 @@ export interface ProjectStates {
   deleteSuccess: boolean;
   error: boolean;
   message: string;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }
+
 /**
  * Interface for creating a new project
  */
@@ -52,22 +59,6 @@ export interface ProjectQueryParams {
 }
 
 /**
- * Interface for project API responses
- */
-export interface ProjectResponse {
-  success: boolean;
-  data?: Project | Project[];
-  message?: string;
-  error?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
-
-/**
  * Interface for creating a new task
  */
 export interface CreateTaskRequest {
@@ -85,4 +76,18 @@ export interface ProjectStats {
   completedTasks: number;
   pendingTasks: number;
   completionPercentage: number;
+}
+
+/**
+ * Interface for API response when getting projects
+ */
+export interface ProjectResponse {
+  success: boolean;
+  data: Project[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 }

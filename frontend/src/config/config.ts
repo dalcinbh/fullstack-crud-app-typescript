@@ -1,8 +1,6 @@
 const apiEnv: string = process.env.REACT_APP_URL_BASE_API || '';
 const api: string = apiEnv ? apiEnv : '';
 
-console.log(api);
-
 const requestConfig = (
   method: string,
   data: any,
