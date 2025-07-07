@@ -1,5 +1,5 @@
 // src/components/Project/ProjectList.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import useAppDispatch from '../../hooks/use-app.dispatch';
 import useAppSelector from '../../hooks/use-app.selector';
@@ -9,11 +9,14 @@ import { getAllProjectsAsync, projectSelector } from '../../slices/project.slice
 import { Project } from '../../interfaces/project.interface';
 import { Table } from './Table';
 import AddProjectModal from './AddProjectModal';
+import EditProjectModal from './EditProjectModal';
 
 const ProjectList = () => {
   const dispatch = useAppDispatch();
   const { projects, loading } = useAppSelector(projectSelector);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(getAllProjectsAsync());
@@ -29,6 +32,21 @@ const ProjectList = () => {
 
   const handleProjectAdded = () => {
     // Refresh the projects list after adding a new project
+    dispatch(getAllProjectsAsync());
+  };
+
+  const handleEditProject = useCallback((project: Project) => {
+    setSelectedProject(project);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleProjectUpdated = () => {
+    // Refresh the projects list after updating a project
     dispatch(getAllProjectsAsync());
   };
 
@@ -155,8 +173,40 @@ const ProjectList = () => {
         enableSorting: false,
         enableColumnFilter: false,
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: (info) => {
+          const project = info.row.original;
+          return (
+            <div className="flex justify-center">
+              <button
+                onClick={() => handleEditProject(project)}
+                className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors"
+                title="Edit project"
+              >
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                  />
+                </svg>
+              </button>
+            </div>
+          );
+        },
+        enableSorting: false,
+        enableColumnFilter: false,
+      },
     ],
-    [],
+    [handleEditProject],
   );
 
   const data: Project[] = projects || [];
@@ -204,6 +254,15 @@ const ProjectList = () => {
         onClose={handleCloseModal}
         onSuccess={handleProjectAdded}
       />
+
+      {selectedProject && (
+        <EditProjectModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSuccess={handleProjectUpdated}
+          project={selectedProject}
+        />
+      )}
     </div>
   );
 };
