@@ -1,35 +1,86 @@
+# Docker Compose configuration for Project Management System database infrastructure
+# Provides MySQL 8.0 database server with phpMyAdmin web interface for development
+# Creates isolated network environment with persistent data storage
+
+# Service definitions for the project management system database stack
 services:
+  # MySQL 8.0 database server for project and task data storage
   mysql:
+    # Official MySQL 8.0 image from Docker Hub with latest stable release
     image: mysql:8.0
+
+    # Custom container name for easy identification and management
     container_name: mysql
+
+    # Environment variables for MySQL server configuration
     environment:
+      # Root user password for administrative access
       MYSQL_ROOT_PASSWORD: root
+
+      # Default database created on container startup for the application
       MYSQL_DATABASE: projects
+
+      # Application user for non-root database access with limited privileges
       MYSQL_USER: user
+
+      # Password for the application user account
       MYSQL_PASSWORD: password
+
+    # Port mapping to expose MySQL server to host machine
     ports:
+      # Map host port 3306 to container port 3306 (MySQL default)
       - "3306:3306"
+
+    # Volume mounting for persistent data storage across container restarts
     volumes:
+      # Mount local mysql_data directory to MySQL data directory
+      # Ensures database data persists when container is removed/recreated
       - ./mysql_data:/var/lib/mysql
+
+    # Network assignment for inter-service communication
     networks:
       - project-net
 
+  # phpMyAdmin web interface for MySQL database administration
   phpmyadmin:
+    # Official phpMyAdmin image for web-based database management
     image: phpmyadmin/phpmyadmin
+
+    # Custom container name for easy identification and management
     container_name: phpmyadmin
+
+    # Environment variables for phpMyAdmin configuration
     environment:
+      # Hostname of the MySQL server to connect to (service name)
       PMA_HOST: mysql
+
+      # Default username for automatic login (MySQL root user)
       PMA_USER: root
+
+      # Default password for automatic login (MySQL root password)
       PMA_PASSWORD: root
+
+    # Port mapping to expose phpMyAdmin web interface to host machine
     ports:
+      # Map host port 8081 to container port 80 (phpMyAdmin web server)
       - "8081:80"
+
+    # Service dependency to ensure MySQL starts before phpMyAdmin
     depends_on:
       - mysql
+
+    # Network assignment for communication with MySQL service
     networks:
       - project-net
 
+# Custom network definition for service isolation and communication
 networks:
+  # Internal network for MySQL and phpMyAdmin inter-service communication
+  # Provides network isolation from other Docker containers
   project-net:
 
+# Named volume definition for persistent data storage
 volumes:
+  # Persistent volume for MySQL data storage
+  # Ensures database data survives container removal and system restarts
   mysql_data:
