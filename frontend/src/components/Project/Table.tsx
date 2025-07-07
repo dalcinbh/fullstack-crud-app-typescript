@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   flexRender,
   ColumnDef,
   SortingState,
@@ -13,6 +14,7 @@ import {
 interface TableProps<T> {
   data: T[];
   columns: ColumnDef<T>[];
+  pageSize?: number;
 }
 
 // Custom filter function
@@ -21,7 +23,7 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   return itemRank ? itemRank.toString().toLowerCase().includes(value.toLowerCase()) : false;
 };
 
-export function Table<T>({ data, columns }: TableProps<T>) {
+export function Table<T>({ data, columns, pageSize = 10 }: TableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
 
@@ -41,7 +43,17 @@ export function Table<T>({ data, columns }: TableProps<T>) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: pageSize,
+      },
+    },
   });
+
+  const totalPages = table.getPageCount();
+  const currentPage = table.getState().pagination.pageIndex;
+  const showPagination = totalPages > 1;
 
   return (
     <div className="w-full">
@@ -99,10 +111,52 @@ export function Table<T>({ data, columns }: TableProps<T>) {
           </tbody>
         </table>
       </div>
+      
       <div className="mt-4 flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          Showing {table.getFilteredRowModel().rows.length} of {data.length} results
+          Showing{' '}
+          {showPagination 
+            ? `${currentPage * pageSize + 1} to ${Math.min((currentPage + 1) * pageSize, table.getFilteredRowModel().rows.length)}`
+            : table.getFilteredRowModel().rows.length
+          }{' '}
+          of {table.getFilteredRowModel().rows.length} results
         </div>
+        
+        {showPagination && (
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+              className="px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {'<<'}
+            </button>
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {'<'}
+            </button>
+            <span className="px-3 py-1 text-sm text-gray-700">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {'>'}
+            </button>
+            <button
+              onClick={() => table.setPageIndex(totalPages - 1)}
+              disabled={!table.getCanNextPage()}
+              className="px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {'>>'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

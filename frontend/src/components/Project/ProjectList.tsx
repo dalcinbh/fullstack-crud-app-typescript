@@ -21,6 +21,9 @@ const ProjectList = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedProjectForTasks, setSelectedProjectForTasks] = useState<Project | null>(null);
 
+  // Read page size from environment variables
+  const projectPageSize = Number(process.env.REACT_APP_PROJECT_LIST_SIZE_PAGE) || 5;
+
   useEffect(() => {
     dispatch(getAllProjectsAsync());
   }, [dispatch]);
@@ -279,7 +282,7 @@ const ProjectList = () => {
         </div>
       </div>
 
-      {!loading && <Table data={data} columns={columns} />}
+      {!loading && <Table data={data} columns={columns} pageSize={projectPageSize} />}
 
       <AddProjectModal
         isOpen={isModalOpen}

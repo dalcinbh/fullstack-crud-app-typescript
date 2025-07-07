@@ -5,8 +5,7 @@ import { getAllTasksAsync, taskSelector, reset } from '../../slices/task.slice';
 import { getAllProjectsAsync } from '../../slices/project.slice';
 import { Project } from '../../interfaces/project.interface';
 import { Task } from '../../interfaces/task.interface';
-import { formatDateToBR } from '../../utils/dateFormat';
-import TaskItem from './TaskItem';
+import { TaskTable } from './TaskTable';
 import AddTaskModal from './AddTaskModal';
 
 interface TaskManagementModalProps {
@@ -59,6 +58,15 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
     // Refresh is handled by useEffect above
   }, []);
 
+  const handleTaskUpdate = useCallback(() => {
+    // Refresh tasks and trigger projects update
+    dispatch(getAllTasksAsync(project.id));
+    dispatch(getAllProjectsAsync());
+    if (onProjectsUpdate) {
+      onProjectsUpdate();
+    }
+  }, [dispatch, project.id, onProjectsUpdate]);
+
   // Sort tasks by createdAt descending
   const sortedTasks = [...tasks].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -73,7 +81,7 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 modal-backdrop overflow-y-auto h-full w-full z-50">
-        <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+        <div className="relative top-4 mx-auto p-5 border w-full max-w-6xl shadow-lg rounded-md bg-white">
           <div className="mt-3">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -104,7 +112,7 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
 
             {/* Add Task Button */}
             <div className="flex justify-between items-center mb-6">
-              <h4 className="text-lg font-medium text-gray-900">Task List</h4>
+              <h4 className="text-lg font-medium text-gray-900">Task Management</h4>
               <button
                 onClick={handleAddTask}
                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
@@ -121,9 +129,9 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
               </div>
             )}
 
-            {/* Tasks List */}
+            {/* Tasks Table */}
             {!loading && (
-              <div className="max-h-96 overflow-y-auto">
+              <>
                 {sortedTasks.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="text-gray-400 mb-4">
@@ -141,25 +149,13 @@ const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {sortedTasks.map((task) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-                        projectId={project.id}
-                        onUpdate={() => {
-                          // Refresh tasks and trigger projects update
-                          dispatch(getAllTasksAsync(project.id));
-                          dispatch(getAllProjectsAsync());
-                          if (onProjectsUpdate) {
-                            onProjectsUpdate();
-                          }
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <TaskTable
+                    data={sortedTasks}
+                    projectId={project.id}
+                    onUpdate={handleTaskUpdate}
+                  />
                 )}
-              </div>
+              </>
             )}
 
             {/* Footer */}
