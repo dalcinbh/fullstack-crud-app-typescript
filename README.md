@@ -33,7 +33,7 @@ You must have the following installed on your machine:
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/dalcinbh/test_project.git
+git clone https://github.com/dalcinbh/fullstack-crud-app-typescript.git
 cd your-repository
 ```
 
