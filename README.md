@@ -1,4 +1,10 @@
-# Project Management System - Full Stack Application
+# Project Management System | React + Node.js + TypeScript + MySQL
+
+![React](https://img.shields.io/badge/React-19-blue)
+![Node.js](https://img.shields.io/badge/Node.js-18-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-✓-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-lightblue)
 
 A modern, full-stack project management application built with **React TypeScript frontend** and **Node.js backend API**. This system provides comprehensive project and task management capabilities with a clean, responsive interface and robust backend architecture.
 
